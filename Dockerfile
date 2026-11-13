@@ -20,8 +20,9 @@ RUN set -e; \
 WORKDIR /app
 COPY app/ /app/
 # the bot imports Qbazz's code from ../qbazz-core; here that folder is called core
-RUN ln -s core qbazz-core && mkdir -p /data && chown -R node:node /app /data
-USER node
+# The persistent disk is mounted at /data owned by root, so the container runs as root: as the unprivileged `node` user
+# it cannot create anything on the disk (EACCES). The container is the isolation boundary on a platform like Runflare.
+RUN ln -s core qbazz-core && mkdir -p /data
 
 # everything that must survive a restart lives in /data: the database, the photos and the generated secrets
 ENV QBAZZ_DATA_DIR=/data
