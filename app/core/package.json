@@ -1,0 +1,21 @@
+{
+  "name": "@qbazz/core",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Qbazz core domain logic, storage and HTTP API. Channel-agnostic: Telegram, web and admin all speak to this.",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./http": "./src/api/http.js"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.127.0"
+  }
+}

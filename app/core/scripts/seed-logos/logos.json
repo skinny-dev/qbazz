@@ -1,0 +1,58 @@
+[
+  {
+    "slug": "mezon-setareh",
+    "letter": "م",
+    "name": "مزون ستاره",
+    "from": "#6a45c9",
+    "to": "#b39cff"
+  },
+  {
+    "slug": "poshak-arian",
+    "letter": "آ",
+    "name": "پوشاک آرین",
+    "from": "#1f6fbf",
+    "to": "#6db4ff"
+  },
+  {
+    "slug": "varzesh-push-parsa",
+    "letter": "ور",
+    "name": "ورزش‌پوش پارسا",
+    "from": "#00796b",
+    "to": "#4fd1c0"
+  },
+  {
+    "slug": "garmineh",
+    "letter": "گ",
+    "name": "گرمینه",
+    "from": "#c2381f",
+    "to": "#ff9a84"
+  },
+  {
+    "slug": "mahoor-underwear",
+    "letter": "ما",
+    "name": "ماهور",
+    "from": "#b87800",
+    "to": "#f7c660"
+  },
+  {
+    "slug": "khaneh-push-negin",
+    "letter": "خ",
+    "name": "خانه‌پوش نگین",
+    "from": "#5d7f00",
+    "to": "#b6d94a"
+  },
+  {
+    "slug": "qbazz-admin",
+    "letter": "Q",
+    "name": "Qbazz",
+    "from": "#2d3a00",
+    "to": "#8fb800"
+  },
+  {
+    "slug": "aysan-zabihi",
+    "letter": "آس",
+    "name": "آی‌سان",
+    "from": "#b4236b",
+    "to": "#ff8fc2"
+  }
+]

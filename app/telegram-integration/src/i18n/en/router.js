@@ -1,0 +1,81 @@
+/** Commands, the welcome and help screens, language picker, channel-post and alert copy. */
+export const router = {
+  'b.cmd.start': 'Home — browse shops and products',
+  'b.cmd.search': 'Search for a product or shop',
+  'b.cmd.browse': 'Browse by category',
+  'b.cmd.cart': 'View your cart',
+  'b.cmd.orders': 'Track your orders',
+  'b.cmd.sell': 'Open your own shop',
+  'b.cmd.shop': 'Your shop dashboard',
+  'b.cmd.link': 'Link your web account',
+  'b.cmd.language': 'Change language',
+  'b.cmd.help': 'How Qbazz works',
+
+  'b.bot.name': 'Qbazz',
+  'b.bot.short': 'Shops on Telegram — buy, sell and track orders in one chat.',
+  'b.bot.about': 'Qbazz is a marketplace that lives in Telegram and on the web, with one account across both. Browse local shops, order in a few taps, or open your own shop in about two minutes.',
+
+  'b.start.welcome': '👋 Welcome to Qbazz, {name}',
+  'b.start.lead': 'Qbazz is a marketplace that lives in Telegram — and on the web, with the same account.',
+  'b.start.buy': '🛍 Buy from local shops without leaving chat',
+  'b.start.sell': '🏪 Or open your own shop in about two minutes',
+  'b.start.ask': 'What brings you here?',
+  // The /start greeting for a returning user (composed into one short block by
+  // handleStart — see router.js). Deliberately brief: the keyboard right below
+  // it already carries the actions, so this only has to say hello, point at
+  // search, and name what the other buttons do.
+  'b.start.back': '👋 Hey {name}, welcome to Qbazz!',
+  'b.start.home_pick': '🔎 Search for a shop or product to get started.',
+  'b.start.home_quicklinks': '🏪 Manage your shop | 🛒 Your cart | ▶️ Continue shopping',
+  'b.start.handoff': 'Welcome back — picking up where you left off on the web.',
+  'b.btn.here_to_shop': "🛍 I'm here to shop",
+  'b.btn.want_to_sell': '🏪 I want to sell',
+  'b.btn.just_looking': '👀 Just looking',
+  'b.btn.language': '🌐 Language',
+
+  'b.help.title': 'How Qbazz works',
+  'b.help.buying': 'Buying',
+  'b.help.buy_1': '• Search or browse, tap a product, add it to your cart',
+  'b.help.buy_2': '• Checkout takes a name, a number and an address',
+  'b.help.buy_3': '• You get a message at every step until it arrives',
+  'b.help.selling': 'Selling',
+  'b.help.sell_1': '• /sell walks you through opening a shop',
+  'b.help.sell_2': '• Add products with a photo and a price',
+  'b.help.sell_3': '• New orders come straight to this chat',
+  'b.help.both': 'Telegram and web',
+  'b.help.both_1': '• /link connects this chat to your web account',
+  'b.help.both_2': '• Your cart, orders and shop are shared across both',
+  'b.help.human': 'Need a human? {support}',
+  'b.btn.link_web': '🔗 Link web account',
+
+  'b.inline.view': '🛒 View in Qbazz',
+
+  // -- Channel posts (worded in the shop's language) ---------------------------
+  'b.post.out_of_stock': '⚠️ Out of stock',
+  'b.post.in_stock': '📦 In stock',
+  'b.post.cta_line': '🛍️ Tap below to buy',
+  'b.post.buy': 'Buy now',
+  'b.post.cart': 'Add to cart',
+  'b.post.save': 'Save',
+  'b.post.inquire': 'Ask for price',
+  'b.post.shop': 'Browse shop',
+  'b.post.contact': 'Ask a question',
+  'b.post.share': 'Share',
+  'b.post.web': 'View on web',
+
+  // -- Alerts ------------------------------------------------------------------
+  'b.alert.open_order': '📦 Open order',
+  'b.alert.track_order': '📦 Track order',
+  'b.alert.open_product': '🧺 Open product',
+  'b.alert.review_post': '📝 Review the post',
+  'b.alert.approve': '✅ Approve',
+  'b.alert.reject': '❌ Reject',
+  'b.alert.see_shop': '👀 See the shop',
+  'b.alert.full_queue': '📋 Full queue',
+  'b.alert.admin': '🛡 Admin',
+  'b.alert.my_shop': '🏪 My shop',
+  'b.alert.fix_resubmit': '✏️ Fix and resubmit',
+  'b.alert.rate_it': '⭐ Rate it',
+  'b.alert.ai_improve': '✨ Improve with AI',
+  'b.alert.edit_manually': '✏️ Edit manually',
+};

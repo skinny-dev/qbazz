@@ -1,0 +1,9 @@
+{
+  "name": "@qbazz/telegram-integration",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Qbazz Telegram bot — discovery, onboarding and commerce flows on top of @qbazz/core.",
+  "main": "src/index.js",
+  "scripts": { "start": "node src/index.js" },
+  "engines": { "node": ">=20.11" }
+}

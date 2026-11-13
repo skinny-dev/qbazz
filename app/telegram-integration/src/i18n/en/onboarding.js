@@ -1,0 +1,31 @@
+/** Rendering the core's onboarding steps as Telegram screens. */
+export const onboarding = {
+  'b.onb.hint_photo': 'Send a photo, or tap Skip.',
+  'b.onb.hint_number': 'Send a number, e.g. 12.50',
+  'b.onb.hint_type': 'Type your answer and send it.',
+  'b.onb.how_to': 'How to connect',
+  'b.onb.pick_one': 'Pick at least one',
+  'b.onb.cancelled_toast': 'Setup cancelled',
+  'b.onb.cancelled_msg': 'No problem — your progress is saved if you want to pick it up later.',
+  'b.onb.cancelled_hint': 'You can start again any time with /sell.',
+  'b.onb.photo_failed': 'I could not read that photo — try another one, or tap Skip.',
+  'b.onb.channel_fix': 'Fix that and forward a post again, or tap Skip.',
+  'b.onb.got_it': '📍 Got it — {place}',
+
+  'b.btn.skip': 'Skip ›',
+  'b.btn.skip_for_now': 'Skip for now ›',
+  'b.btn.cancel_setup': '✖️ Cancel setup',
+  'b.btn.done_n': '✅ Done ({count})',
+
+  'b.onb.seller_done': '🎉 Your shop is set up!',
+  'b.onb.seller_pending': 'It is with our team for review — usually under a day. We will message you the moment it goes live.',
+  'b.onb.seller_live': 'It is live. Share your link and start taking orders.',
+  'b.onb.seller_incomplete': 'One more thing: {missing} still needed before it can go live. Finish it from your shop dashboard.',
+  'b.onb.seller_more': 'Meanwhile, add more products so buyers have something to browse.',
+  'b.btn.my_dashboard': '🏪 My shop dashboard',
+  'b.btn.add_another': '➕ Add another product',
+  'b.btn.web_dashboard': '🌐 Open web dashboard',
+  'b.onb.buyer_done': '✅ All set!',
+  'b.onb.buyer_done_body': 'Your feed is tuned. Here is what is good right now.',
+  'b.btn.show_me': '🏠 Show me',
+};

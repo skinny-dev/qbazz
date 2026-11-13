@@ -1,0 +1,168 @@
+{
+  "_source": "https://dummyjson.com (test catalogue of real e-commerce product photos) + https://scenesku.com/api/v1/public-packs/{womens-fashion,shoes} (SceneSKU ready-made product scene packs)",
+  "photos": {
+    "Black Women's Gown": [
+      "https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/4.webp"
+    ],
+    "Corset Leather With Skirt": [
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-leather-with-skirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-leather-with-skirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-leather-with-skirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-leather-with-skirt/4.webp"
+    ],
+    "Marni Red & Black Suit": [
+      "https://cdn.dummyjson.com/product-images/womens-dresses/marni-red-&-black-suit/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/marni-red-&-black-suit/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/marni-red-&-black-suit/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/marni-red-&-black-suit/4.webp"
+    ],
+    "Dress Pea": [
+      "https://cdn.dummyjson.com/product-images/womens-dresses/dress-pea/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/dress-pea/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/dress-pea/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/dress-pea/4.webp"
+    ],
+    "Blue Frock": [
+      "https://cdn.dummyjson.com/product-images/tops/blue-frock/1.webp",
+      "https://cdn.dummyjson.com/product-images/tops/blue-frock/2.webp",
+      "https://cdn.dummyjson.com/product-images/tops/blue-frock/3.webp",
+      "https://cdn.dummyjson.com/product-images/tops/blue-frock/4.webp"
+    ],
+    "Gray Dress": [
+      "https://cdn.dummyjson.com/product-images/tops/gray-dress/1.webp",
+      "https://cdn.dummyjson.com/product-images/tops/gray-dress/2.webp",
+      "https://cdn.dummyjson.com/product-images/tops/gray-dress/3.webp",
+      "https://cdn.dummyjson.com/product-images/tops/gray-dress/4.webp"
+    ],
+    "Tartan Dress": [
+      "https://cdn.dummyjson.com/product-images/tops/tartan-dress/1.webp",
+      "https://cdn.dummyjson.com/product-images/tops/tartan-dress/2.webp",
+      "https://cdn.dummyjson.com/product-images/tops/tartan-dress/3.webp",
+      "https://cdn.dummyjson.com/product-images/tops/tartan-dress/4.webp"
+    ],
+    "Blue & Black Check Shirt": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/4.webp"
+    ],
+    "Gigabyte Aorus Men Tshirt": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/gigabyte-aorus-men-tshirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/gigabyte-aorus-men-tshirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/gigabyte-aorus-men-tshirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/gigabyte-aorus-men-tshirt/4.webp"
+    ],
+    "Man Plaid Shirt": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/4.webp"
+    ],
+    "Man Short Sleeve Shirt": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/4.webp"
+    ],
+    "Men Check Shirt": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/4.webp"
+    ],
+    "SceneSKU womens-fashion 1": [
+      "https://cdn.scenesku.com/scene-packs/50258134-2fff-4ca4-abea-3f46e9368378/cbe0e097-da10-44de-b076-8be49c7b8752.webp",
+      "https://cdn.scenesku.com/scene-packs/50258134-2fff-4ca4-abea-3f46e9368378/5351ed3c-d739-44f4-b85b-fd133612cb32.webp",
+      "https://cdn.scenesku.com/scene-packs/50258134-2fff-4ca4-abea-3f46e9368378/75fcc36e-507f-4cd0-9090-98a5a3b8d2e3.webp",
+      "https://cdn.scenesku.com/scene-packs/50258134-2fff-4ca4-abea-3f46e9368378/3a9beb40-5989-4620-9421-4c180697e317.webp",
+      "https://cdn.scenesku.com/scene-packs/50258134-2fff-4ca4-abea-3f46e9368378/46e26e6e-703b-4aeb-b1f0-ca6f1cd86538.webp",
+      "https://cdn.scenesku.com/scene-packs/50258134-2fff-4ca4-abea-3f46e9368378/f1ce9683-75fd-455b-9d32-8fc46de35f28.webp"
+    ],
+    "SceneSKU womens-fashion 2": [
+      "https://cdn.scenesku.com/scene-packs/27e4c87f-57d1-45e3-8f62-bd206973da5a/f4c01b33-d9dc-4610-829f-44975cc865c6.webp",
+      "https://cdn.scenesku.com/scene-packs/27e4c87f-57d1-45e3-8f62-bd206973da5a/12520db6-8045-4518-b730-a173e8ca78f1.webp",
+      "https://cdn.scenesku.com/scene-packs/27e4c87f-57d1-45e3-8f62-bd206973da5a/832cecb8-5a8b-40e9-a26f-8d08a0baec44.webp",
+      "https://cdn.scenesku.com/scene-packs/27e4c87f-57d1-45e3-8f62-bd206973da5a/3e2e6efa-df6e-47cb-811f-ac083866c8fa.webp",
+      "https://cdn.scenesku.com/scene-packs/27e4c87f-57d1-45e3-8f62-bd206973da5a/427e6a1e-b848-4bdd-a7ea-d06d59d19148.webp",
+      "https://cdn.scenesku.com/scene-packs/27e4c87f-57d1-45e3-8f62-bd206973da5a/6a128486-846b-4bc8-8546-bb5597480af0.webp"
+    ],
+    "SceneSKU womens-fashion 3": [
+      "https://cdn.scenesku.com/scene-packs/d252c6ae-1098-4aeb-b7ee-f0a21beae4b6/7337a42c-cb5a-4694-a618-d6b6aa4a3c01.webp",
+      "https://cdn.scenesku.com/scene-packs/d252c6ae-1098-4aeb-b7ee-f0a21beae4b6/8d83ba36-db34-4159-96c4-4d5bbba9c8aa.webp",
+      "https://cdn.scenesku.com/scene-packs/d252c6ae-1098-4aeb-b7ee-f0a21beae4b6/1ef8a1f7-07c6-4dea-b7aa-2b19918f8db4.webp",
+      "https://cdn.scenesku.com/scene-packs/d252c6ae-1098-4aeb-b7ee-f0a21beae4b6/35cbc2a1-8814-4437-a1cb-b2188d396a9f.webp",
+      "https://cdn.scenesku.com/scene-packs/d252c6ae-1098-4aeb-b7ee-f0a21beae4b6/22628b8c-bad7-489f-bbb7-82ee7c748304.webp",
+      "https://cdn.scenesku.com/scene-packs/d252c6ae-1098-4aeb-b7ee-f0a21beae4b6/8928f0d2-5db3-4461-a42c-424afdd3e4d9.webp"
+    ],
+    "SceneSKU womens-fashion 4": [
+      "https://cdn.scenesku.com/scene-packs/ae9a5b6d-727d-4dcc-8b99-7c07b701b5be/7de6ab66-478b-45da-888b-79a1049dee01.webp",
+      "https://cdn.scenesku.com/scene-packs/ae9a5b6d-727d-4dcc-8b99-7c07b701b5be/9438174f-30ac-489f-bd1b-abea7ef2e848.webp",
+      "https://cdn.scenesku.com/scene-packs/ae9a5b6d-727d-4dcc-8b99-7c07b701b5be/7df361e6-3c92-4d1b-a569-5e540a0ebbb2.webp",
+      "https://cdn.scenesku.com/scene-packs/ae9a5b6d-727d-4dcc-8b99-7c07b701b5be/d8453770-0997-41b3-928c-0b2ad102991c.webp",
+      "https://cdn.scenesku.com/scene-packs/ae9a5b6d-727d-4dcc-8b99-7c07b701b5be/879bfe50-b6af-44db-af18-26c07a453f0f.webp",
+      "https://cdn.scenesku.com/scene-packs/ae9a5b6d-727d-4dcc-8b99-7c07b701b5be/ade0b71c-5d1b-41a8-81b4-1d2df24060a8.webp"
+    ],
+    "SceneSKU womens-fashion 5": [
+      "https://cdn.scenesku.com/scene-packs/8672bb13-c2c0-4fd0-bb6e-e5e53c25182d/b7ea7316-330d-4325-8ad4-9e61c4bc4a6a.webp",
+      "https://cdn.scenesku.com/scene-packs/8672bb13-c2c0-4fd0-bb6e-e5e53c25182d/0147d6e8-598b-47ec-8f6d-3c89c44160f5.webp",
+      "https://cdn.scenesku.com/scene-packs/8672bb13-c2c0-4fd0-bb6e-e5e53c25182d/7242dd7e-274c-407a-9dd3-e34ecbc67f7c.webp",
+      "https://cdn.scenesku.com/scene-packs/8672bb13-c2c0-4fd0-bb6e-e5e53c25182d/be58d270-2566-428c-8c9b-f0d03903db11.webp",
+      "https://cdn.scenesku.com/scene-packs/8672bb13-c2c0-4fd0-bb6e-e5e53c25182d/0f5a1a19-9b75-4ff4-9364-429a29fd0bd4.webp",
+      "https://cdn.scenesku.com/scene-packs/8672bb13-c2c0-4fd0-bb6e-e5e53c25182d/f20f0c09-0544-41aa-b392-9f13a60bcef9.webp"
+    ],
+    "SceneSKU shoes 1": [
+      "https://cdn.scenesku.com/scene-packs/a8aa6cb1-670e-455a-9c58-ba4c32fe50a4/949ccd1d-a088-403e-8067-f4d2eea362f4.webp",
+      "https://cdn.scenesku.com/scene-packs/a8aa6cb1-670e-455a-9c58-ba4c32fe50a4/081ba593-5394-456c-8296-07deb4158207.webp",
+      "https://cdn.scenesku.com/scene-packs/a8aa6cb1-670e-455a-9c58-ba4c32fe50a4/96134dc6-29e2-47ba-b4b2-b717b212064e.webp",
+      "https://cdn.scenesku.com/scene-packs/a8aa6cb1-670e-455a-9c58-ba4c32fe50a4/f730d617-2540-4f4c-955d-50e98f016271.webp",
+      "https://cdn.scenesku.com/scene-packs/a8aa6cb1-670e-455a-9c58-ba4c32fe50a4/b50093b8-2ae8-46a8-afee-492ee413bb61.webp",
+      "https://cdn.scenesku.com/scene-packs/a8aa6cb1-670e-455a-9c58-ba4c32fe50a4/abdcb2ce-621e-4dd5-8526-75a8da0589e6.webp"
+    ],
+    "SceneSKU shoes 2": [
+      "https://cdn.scenesku.com/scene-packs/a3c827cf-0ae5-4827-af09-7ea18d8d2885/fab8331b-ad60-4e5e-9d55-2fca5e4623a5.webp",
+      "https://cdn.scenesku.com/scene-packs/a3c827cf-0ae5-4827-af09-7ea18d8d2885/449cee4e-e7e8-4706-9fba-a64dbdcb89cf.webp",
+      "https://cdn.scenesku.com/scene-packs/a3c827cf-0ae5-4827-af09-7ea18d8d2885/56e8a98b-703f-4415-9ecc-4ba41ca14fad.webp",
+      "https://cdn.scenesku.com/scene-packs/a3c827cf-0ae5-4827-af09-7ea18d8d2885/79d10bca-a4eb-4b1e-9de8-d807a345beba.webp",
+      "https://cdn.scenesku.com/scene-packs/a3c827cf-0ae5-4827-af09-7ea18d8d2885/ac24dbd5-7db2-4666-a51c-352e6621f5c1.webp",
+      "https://cdn.scenesku.com/scene-packs/a3c827cf-0ae5-4827-af09-7ea18d8d2885/93d360b3-3291-4526-913e-35bb5bce1731.webp"
+    ],
+    "SceneSKU shoes 3": [
+      "https://cdn.scenesku.com/scene-packs/1b89d2cd-70e5-4a9e-9264-5a2c3ca4199b/99e207af-8d72-4201-b4ca-074e19fb0e4b.webp",
+      "https://cdn.scenesku.com/scene-packs/1b89d2cd-70e5-4a9e-9264-5a2c3ca4199b/31869f49-8b46-45c9-843a-dab9963289f5.webp",
+      "https://cdn.scenesku.com/scene-packs/1b89d2cd-70e5-4a9e-9264-5a2c3ca4199b/df994dde-e8c0-433e-a413-d3470fe63087.webp",
+      "https://cdn.scenesku.com/scene-packs/1b89d2cd-70e5-4a9e-9264-5a2c3ca4199b/46713d07-1c73-47f9-b578-7c422cf328dd.webp",
+      "https://cdn.scenesku.com/scene-packs/1b89d2cd-70e5-4a9e-9264-5a2c3ca4199b/a2bcecda-c973-4838-adb6-4caa9e164891.webp",
+      "https://cdn.scenesku.com/scene-packs/1b89d2cd-70e5-4a9e-9264-5a2c3ca4199b/500ba40d-7d63-4bbb-a046-068d35befb55.webp"
+    ],
+    "SceneSKU shoes 4": [
+      "https://cdn.scenesku.com/scene-packs/6e323896-008c-408c-aa4a-9f45b4e34d64/d4280864-9919-4f04-987e-cff75a43a54f.webp",
+      "https://cdn.scenesku.com/scene-packs/6e323896-008c-408c-aa4a-9f45b4e34d64/d7f82ff6-73a2-41a1-9d5e-48cfe05cdc99.webp",
+      "https://cdn.scenesku.com/scene-packs/6e323896-008c-408c-aa4a-9f45b4e34d64/791434ab-b358-48ca-ac34-54478d87fdb2.webp",
+      "https://cdn.scenesku.com/scene-packs/6e323896-008c-408c-aa4a-9f45b4e34d64/d707d95c-ae16-4bf7-bfa2-e2e82d7a36c9.webp",
+      "https://cdn.scenesku.com/scene-packs/6e323896-008c-408c-aa4a-9f45b4e34d64/496253da-c850-4ec7-ad01-b1fee1d50f04.webp",
+      "https://cdn.scenesku.com/scene-packs/6e323896-008c-408c-aa4a-9f45b4e34d64/6aeb367b-920e-43b2-889a-91d05d6f017a.webp"
+    ],
+    "SceneSKU shoes 5": [
+      "https://cdn.scenesku.com/scene-packs/1efd6c4d-debe-4b15-a3b0-9c97a36e6b99/a1118bf4-5d6b-478e-9ca4-50b936336e05.webp",
+      "https://cdn.scenesku.com/scene-packs/1efd6c4d-debe-4b15-a3b0-9c97a36e6b99/edc62daf-6561-4a7e-813a-e347f12e19d3.webp",
+      "https://cdn.scenesku.com/scene-packs/1efd6c4d-debe-4b15-a3b0-9c97a36e6b99/391f5324-83d1-46f3-af4b-c86982e67ce1.webp",
+      "https://cdn.scenesku.com/scene-packs/1efd6c4d-debe-4b15-a3b0-9c97a36e6b99/fb0ab523-7800-412a-ae1c-3bb3997b2387.webp",
+      "https://cdn.scenesku.com/scene-packs/1efd6c4d-debe-4b15-a3b0-9c97a36e6b99/fe522981-017f-470f-a290-8ea3d4605e9f.webp",
+      "https://cdn.scenesku.com/scene-packs/1efd6c4d-debe-4b15-a3b0-9c97a36e6b99/f873b2ee-0431-44a5-beb5-2b76d7c07aca.webp"
+    ]
+  },
+  "_avatars": "https://randomuser.me/api/portraits (portraits for test data)",
+  "avatars": {
+    "900000001": "https://randomuser.me/api/portraits/women/44.jpg",
+    "900000002": "https://randomuser.me/api/portraits/men/32.jpg",
+    "900000003": "https://randomuser.me/api/portraits/men/75.jpg",
+    "900000004": "https://randomuser.me/api/portraits/women/65.jpg",
+    "900000005": "https://randomuser.me/api/portraits/women/68.jpg",
+    "900000006": "https://randomuser.me/api/portraits/women/17.jpg",
+    "900000100": "https://randomuser.me/api/portraits/women/90.jpg",
+    "900000101": "https://randomuser.me/api/portraits/men/46.jpg"
+  }
+}

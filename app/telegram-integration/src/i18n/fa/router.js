@@ -1,0 +1,81 @@
+/** Commands, the welcome and help screens, language picker, channel-post and alert copy. */
+export const router = {
+  'b.cmd.start': 'خانه — مرور فروشگاه‌ها و محصولات',
+  'b.cmd.search': 'جستجوی محصول یا فروشگاه',
+  'b.cmd.browse': 'مرور دسته‌بندی‌ها',
+  'b.cmd.cart': 'مشاهدهٔ سبد خرید',
+  'b.cmd.orders': 'پیگیری سفارش‌ها',
+  'b.cmd.sell': 'ساخت فروشگاه خودتان',
+  'b.cmd.shop': 'داشبورد فروشگاه شما',
+  'b.cmd.link': 'اتصال حساب وب',
+  'b.cmd.language': 'تغییر زبان',
+  'b.cmd.help': 'راهنمای Qbazz',
+
+  'b.bot.name': 'Qbazz',
+  'b.bot.short': 'فروشگاه‌ها در تلگرام — خرید، فروش و پیگیری سفارش در یک گفتگو.',
+  'b.bot.about': 'Qbazz یک بازارچه است که هم در تلگرام کار می‌کند و هم در وب، با یک حساب برای هر دو. فروشگاه‌های اطرافتان را ببینید، با چند ضربه سفارش بدهید، یا در حدود دو دقیقه فروشگاه خودتان را بسازید.',
+
+  'b.start.welcome': '👋 {name} عزیز، به Qbazz خوش آمدید',
+  'b.start.lead': 'Qbazz یک بازارچه است که هم در تلگرام کار می‌کند و هم در وب، با همان یک حساب.',
+  'b.start.buy': '🛍 بدون خروج از گفتگو از فروشگاه‌های اطرافتان خرید کنید',
+  'b.start.sell': '🏪 یا در حدود دو دقیقه فروشگاه خودتان را بسازید',
+  'b.start.ask': 'برای چه کاری آمده‌اید؟',
+  // The /start greeting for a returning user (composed into one short block by
+  // handleStart — see router.js). Deliberately brief: the keyboard right below
+  // it already carries the actions, so this only has to say hello, point at
+  // search, and name what the other buttons do.
+  'b.start.back': '👋 سلام {name} عزیز، به کیو‌باز خوش آمدید!',
+  'b.start.home_pick': '🔎 برای شروع، یک فروشگاه یا محصول را جستجو کنید.',
+  'b.start.home_quicklinks': '🏪 مدیریت فروشگاه | 🛒 سبد خرید | ▶️ ادامهٔ خرید',
+  'b.start.handoff': 'خوش برگشتید — از همان جایی که در وب بودید ادامه می‌دهیم.',
+  'b.btn.here_to_shop': '🛍 برای خرید آمده‌ام',
+  'b.btn.want_to_sell': '🏪 می‌خواهم بفروشم',
+  'b.btn.just_looking': '👀 فقط نگاه می‌کنم',
+  'b.btn.language': '🌐 زبان',
+
+  'b.help.title': 'Qbazz چطور کار می‌کند',
+  'b.help.buying': 'خرید',
+  'b.help.buy_1': '• جستجو کنید یا دسته‌بندی‌ها را ببینید، روی محصول بزنید و به سبد اضافه کنید',
+  'b.help.buy_2': '• برای ثبت سفارش یک نام، یک شماره و یک نشانی کافی است',
+  'b.help.buy_3': '• تا رسیدن سفارش، در هر مرحله برایتان پیام می‌آید',
+  'b.help.selling': 'فروش',
+  'b.help.sell_1': '• با /sell قدم‌به‌قدم فروشگاهتان را می‌سازید',
+  'b.help.sell_2': '• محصولاتتان را با عکس و قیمت اضافه کنید',
+  'b.help.sell_3': '• سفارش‌های تازه مستقیم به همین گفتگو می‌رسد',
+  'b.help.both': 'تلگرام و وب',
+  'b.help.both_1': '• با /link این گفتگو را به حساب وبتان وصل می‌کنید',
+  'b.help.both_2': '• سبد خرید، سفارش‌ها و فروشگاه شما در هر دو مشترک است',
+  'b.help.human': 'با یک آدم صحبت کنید؟ {support}',
+  'b.btn.link_web': '🔗 اتصال حساب وب',
+
+  'b.inline.view': '🛒 مشاهده در Qbazz',
+
+  // -- Channel posts (worded in the shop's language) ---------------------------
+  'b.post.out_of_stock': '⚠️ ناموجود',
+  'b.post.in_stock': '📦 موجود',
+  'b.post.cta_line': '🛍 برای خرید، روی دکمهٔ زیر بزنید',
+  'b.post.buy': 'خرید',
+  'b.post.cart': 'افزودن به سبد',
+  'b.post.save': 'ذخیره',
+  'b.post.inquire': 'استعلام قیمت',
+  'b.post.shop': 'دیدن فروشگاه',
+  'b.post.contact': 'پرسیدن سؤال',
+  'b.post.share': 'اشتراک‌گذاری',
+  'b.post.web': 'مشاهده در وب',
+
+  // -- Alerts ------------------------------------------------------------------
+  'b.alert.open_order': '📦 باز کردن سفارش',
+  'b.alert.track_order': '📦 پیگیری سفارش',
+  'b.alert.open_product': '🧺 باز کردن محصول',
+  'b.alert.review_post': '📝 بررسی پست',
+  'b.alert.approve': '✅ تأیید',
+  'b.alert.reject': '❌ رد',
+  'b.alert.see_shop': '👀 دیدن فروشگاه',
+  'b.alert.full_queue': '📋 کل صف',
+  'b.alert.admin': '🛡 مدیریت',
+  'b.alert.my_shop': '🏪 فروشگاه من',
+  'b.alert.fix_resubmit': '✏️ اصلاح و ارسال دوباره',
+  'b.alert.rate_it': '⭐ امتیاز دادن',
+  'b.alert.ai_improve': '✨ بهبود با هوش مصنوعی',
+  'b.alert.edit_manually': '✏️ ویرایش دستی',
+};
