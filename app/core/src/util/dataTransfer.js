@@ -124,3 +124,52 @@ export function applyPendingRestore(dataDir, { now = () => Date.now() } = {}) {
   fs.rmSync(incoming, { recursive: true, force: true });
   return { backedUp, photos };
 }
+
+/** The parts of an export that was cut into pieces (name.part00, name.part01, ...), joined into one file at `out`. */
+export function joinParts(dir, prefix, out) {
+  const parts = fs.readdirSync(dir).filter((n) => n.startsWith(`${prefix}.part`)).sort();
+  if (!parts.length) return 0;
+  const fd = fs.openSync(out, 'w', 0o600);
+  try {
+    for (const name of parts) {
+      const data = fs.readFileSync(path.join(dir, name));
+      fs.writeSync(fd, data);
+    }
+  } finally { fs.closeSync(fd); }
+  return parts.length;
+}
+
+/** Cuts a file into pieces of at most `size` bytes (a code host refuses single files over 100 MB). */
+export function splitFile(file, size = 80 * 1024 * 1024) {
+  const total = fs.statSync(file).size;
+  const fd = fs.openSync(file, 'r');
+  const names = [];
+  try {
+    for (let i = 0, at = 0; at < total; i += 1, at += size) {
+      const len = Math.min(size, total - at);
+      const buf = Buffer.alloc(len);
+      fs.readSync(fd, buf, 0, len, at);
+      const name = `${file}.part${String(i).padStart(2, '0')}`;
+      fs.writeFileSync(name, buf);
+      names.push(name);
+    }
+  } finally { fs.closeSync(fd); }
+  return names;
+}
+
+/**
+ * First start of a fresh server: when an encrypted seed (the pieces baked into the image) and its passphrase are present
+ * and it was never applied, stage it so the swap that follows brings it in. Marks `<dataDir>/.seeded` so it happens once.
+ */
+export async function seedOnce({ dataDir, seedDir, prefix = 'qbazz-seed.enc', pass }) {
+  const marker = path.join(dataDir, '.seeded');
+  if (fs.existsSync(marker) || !pass || !fs.existsSync(seedDir)) return null;
+  const joined = path.join(dataDir, '.seed.enc');
+  fs.mkdirSync(dataDir, { recursive: true });
+  try {
+    if (!joinParts(seedDir, prefix, joined)) return null;
+    const staged = await stageRestore({ file: joined, pass, dataDir });
+    fs.writeFileSync(marker, new Date().toISOString());
+    return staged;
+  } finally { fs.rmSync(joined, { force: true }); }
+}

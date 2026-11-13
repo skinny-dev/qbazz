@@ -83,7 +83,10 @@ async function main() {
 
   // a data export staged by core/scripts/restore-data.js is swapped in now, while nothing is running
   try {
-    const { applyPendingRestore } = await import(pathToFileURL(path.join(app, 'core/src/util/dataTransfer.js')).href);
+    const { applyPendingRestore, seedOnce } = await import(pathToFileURL(path.join(app, 'core/src/util/dataTransfer.js')).href);
+    // a brand-new server: the shop's data baked into the image (encrypted) is brought in once, when its passphrase is given
+    const seeded = await seedOnce({ dataDir: data, seedDir: path.join(app, 'seed'), pass: env.QBAZZ_SEED_PASS }).catch((err) => { console.log(`[supervisor] seed not applied: ${err.message}`); return null; });
+    if (seeded) console.log(`[supervisor] seed staged: ${seeded.photos} photos`);
     const done = applyPendingRestore(data);
     if (done) console.log(`[supervisor] restored data: ${done.photos} photos${done.backedUp ? `, the previous database kept as ${done.backedUp}` : ''}`);
   } catch (err) {
