@@ -81,6 +81,15 @@ async function main() {
   const data = env.QBAZZ_DATA_DIR || '/data';
   fs.mkdirSync(path.join(data, 'uploads'), { recursive: true });
 
+  // a data export staged by core/scripts/restore-data.js is swapped in now, while nothing is running
+  try {
+    const { applyPendingRestore } = await import(pathToFileURL(path.join(app, 'core/src/util/dataTransfer.js')).href);
+    const done = applyPendingRestore(data);
+    if (done) console.log(`[supervisor] restored data: ${done.photos} photos${done.backedUp ? `, the previous database kept as ${done.backedUp}` : ''}`);
+  } catch (err) {
+    console.log(`[supervisor] restoring staged data failed: ${err.message}`);
+  }
+
   const publicPort = String(env.PORT || env.QBAZZ_WEB_PORT || 8000);
   const secret = env.QBAZZ_SECRET || persisted(path.join(data, '.secret'));
   const serviceKey = env.QBAZZ_SERVICE_KEY || persisted(path.join(data, '.service-key'));
