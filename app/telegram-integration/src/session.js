@@ -128,6 +128,11 @@ export async function createContext({ update, api, core: baseCore, config, log }
       return tx.t('b.common.error_generic');
     },
 
+    /** Rewrites a message the bot sent earlier (a progress line, a result), dressed like every other send. */
+    edit(messageId, text, replyMarkup) {
+      return api.editMessageText(chatId, messageId, dress(text), { reply_markup: mirror(replyMarkup) }).catch(() => null);
+    },
+
     reply(text, replyMarkup, extra = {}) {
       return api.sendMessage(chatId, dress(text), { reply_markup: mirror(replyMarkup), ...extra });
     },

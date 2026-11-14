@@ -5,6 +5,7 @@ import { normalizeText } from '../util/text.js';
 import { toMinor } from '../util/money.js';
 import { boilerplate, readPost } from '../util/postReader.js';
 import { channelName, crawlChannel, isTelegramPhoto } from '../util/telegramPublic.js';
+import { telegramFetch } from '../util/telegramFetch.js';
 
 const PHOTOS_PER_PRODUCT = 8;
 const MAX_ITEMS = 600;
@@ -19,7 +20,8 @@ const MAX_ITEMS = 600;
 export function createChannelImportService(ctx) {
   const { store: db, services, events, config, log } = ctx;
   const jobs = db.collection(COLLECTIONS.channelImports);
-  const fetchImpl = config.channelImport?.fetch || ((...args) => fetch(...args));
+  // t.me is as unreachable from some servers as the Bot API is: it travels the Telegram proxy when one is set
+  const fetchImpl = config.channelImport?.fetch || telegramFetch(config.telegram?.proxy);
   const delayMs = config.channelImport?.delayMs ?? 350;
 
   const IN_PROGRESS = ['reading', 'importing'];

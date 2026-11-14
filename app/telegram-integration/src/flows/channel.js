@@ -60,6 +60,7 @@ export async function showChannel(ctx, storeId) {
       [button(channel.autoPost ? t('b.btn.auto_off') : t('b.btn.auto_on'), 'cha', storeId)],
       [button(channel.reviewBeforePost === false ? t('b.btn.review_on') : t('b.btn.review_off'), 'chr', storeId)],
       [button(channel.syncPosts ? t('b.btn.sync_off') : t('b.btn.sync_on'), 'chs', storeId)],
+      [button(t('b.btn.import_history'), 'chi', storeId)],
       [button(t('b.btn.queue_existing'), 'chb', storeId)],
       channel.username ? [urlButton(t('b.btn.open_channel', { handle }), `https://t.me/${channel.username}`)] : [],
       [button(t('b.btn.disconnect'), 'chd', storeId)],
@@ -76,11 +77,16 @@ export async function promptConnect(ctx, storeId) {
     lines(
       b(t('b.chan.prompt_title')),
       '',
+      esc(t('b.chan.prompt_fast')),
+      '',
       ...howToLines(t).map((line) => esc(line)),
       '',
       i(t('b.chan.prompt_public')),
     ),
-    keyboard([[button(t('b.nav.cancel'), 'ch', storeId)]]),
+    keyboard([
+      [urlButton(t('b.btn.add_to_channel'), `https://t.me/${ctx.config.username}?startchannel&admin=post_messages+edit_messages+delete_messages`)],
+      [button(t('b.nav.cancel'), 'ch', storeId)],
+    ]),
   );
 }
 
@@ -193,6 +199,7 @@ export async function handleChannelInput(ctx) {
         esc(t('b.chan.connected_note')),
       ),
       keyboard([
+        [button(t('b.btn.import_history'), 'chi', storeId)],
         [button(t('b.btn.post_now'), 'chb', storeId)],
         [button(t('b.btn.channel_settings'), 'ch', storeId), button(t('b.btn.dashboard'), 'sd', storeId)],
       ]),
@@ -204,6 +211,101 @@ export async function handleChannelInput(ctx) {
     );
   }
   return true;
+}
+
+const sleep = (ms) => new Promise((resolve) => { const t = setTimeout(resolve, ms); t.unref?.(); });
+
+/**
+ * Bring the channel's older posts in as products, from the chat itself: read the public page, then ONE tap adds every
+ * post the reader was sure about (the rest wait for a look on the site). The work runs in the background - the bot
+ * keeps answering everyone else - and the message the person is looking at is the progress bar.
+ */
+export async function importHistory(ctx, storeId) {
+  const { t } = ctx;
+  const channel = await ctx.core.getChannel(ctx.account.id, storeId);
+  await ctx.answer();
+  if (!channel || channel.connected === false) return showChannel(ctx, storeId);
+  if (!channel.username) {
+    return ctx.reply(t('b.chan.import_private'), keyboard([[button(t('b.nav.back'), 'ch', storeId)]]));
+  }
+
+  let job;
+  try {
+    job = await ctx.core.channelImportStart(ctx.account.id, storeId, channel.username);
+  } catch (err) {
+    return ctx.reply(`⚠️ ${esc(ctx.err(err))}`, keyboard([[button(t('b.nav.back'), 'ch', storeId)]]));
+  }
+  const sent = await ctx.reply(t('b.chan.import_reading', { pages: 0, posts: 0 }));
+  const messageId = sent?.message_id;
+  const webUrl = `${String(ctx.config.webAppUrl || '').replace(/\/$/, '')}/manage/settings`;
+
+  const show = (text, markup) => (messageId ? ctx.edit(messageId, text, markup) : ctx.reply(text, markup).catch(() => null));
+
+  (async () => {
+    let state = job;
+    for (let n = 0; n < 240 && ['reading'].includes(state.status); n += 1) {
+      await sleep(ctx.config.importPollMs ?? 2500);
+      state = await ctx.core.channelImportGet(ctx.account.id, storeId, job.id);
+      if ((n % 2 === 1 || ctx.config.importPollMs) && state.status === 'reading') await show(t('b.chan.import_reading', { pages: state.progress?.pages || 0, posts: state.progress?.posts || 0 }));
+    }
+    if (state.status === 'failed') return show(t('b.chan.import_failed'), keyboard([[button(t('b.btn.try_again'), 'chi', storeId)], [button(t('b.nav.back'), 'ch', storeId)]]));
+    if (state.status !== 'ready') return show(t('b.chan.import_slow'), keyboard([[urlButton(t('b.btn.review_on_site'), webUrl)]]));
+
+    const items = state.items || [];
+    const sure = items.filter((x) => x.selected);
+    if (!items.length) return show(t('b.chan.import_none', { posts: state.progress?.posts || 0 }), keyboard([[button(t('b.nav.back'), 'ch', storeId)]]));
+    await ctx.setState({ importJobId: job.id, importStoreId: storeId }).catch(() => null);
+    return show(
+      lines(t('b.chan.import_found', { total: items.length, sure: sure.length, posts: state.progress?.posts || 0 }), '', i(t('b.chan.import_hint'))),
+      keyboard([
+        sure.length ? [button(t('b.btn.import_sure', { count: sure.length }), 'chia', storeId, job.id)] : [],
+        items.length !== sure.length ? [button(t('b.btn.import_all', { count: items.length }), 'chiw', storeId, job.id)] : [],
+        [urlButton(t('b.btn.review_on_site'), webUrl)],
+        [button(t('b.nav.back'), 'ch', storeId)],
+      ]),
+    );
+  })().catch((err) => ctx.log?.warn?.(`channel import (bot) failed: ${err.message}`));
+}
+
+/** The tap: add the sure ones (or every one found), then show what happened. */
+export async function commitImport(ctx, storeId, jobId, everything = false) {
+  const { t } = ctx;
+  let job;
+  try {
+    job = await ctx.core.channelImportGet(ctx.account.id, storeId, jobId);
+  } catch (err) {
+    await ctx.answer();
+    return ctx.reply(`⚠️ ${esc(ctx.err(err))}`);
+  }
+  if (job.status !== 'ready') { await ctx.answer(t('b.chan.import_already'), { alert: true }); return null; }
+  const picked = (job.items || []).filter((x) => everything || x.selected).map((x) => ({ id: x.id }));
+  try {
+    await ctx.core.channelImportCommit(ctx.account.id, storeId, jobId, picked);
+  } catch (err) {
+    await ctx.answer();
+    return ctx.reply(`⚠️ ${esc(ctx.err(err))}`);
+  }
+  await ctx.answer();
+  const messageId = ctx.messageId;
+  const show = (text, markup) => ctx.edit(messageId, text, markup);
+  await show(t('b.chan.import_adding', { done: 0, total: picked.length }));
+
+  (async () => {
+    let state = job;
+    for (let n = 0; n < 400 && state.status !== 'done' && state.status !== 'failed'; n += 1) {
+      await sleep(ctx.config.importPollMs ?? 3000);
+      state = await ctx.core.channelImportGet(ctx.account.id, storeId, jobId);
+      if ((n % 2 === 1 || ctx.config.importPollMs) && state.status === 'importing') await show(t('b.chan.import_adding', { done: state.progress?.imported || 0, total: picked.length }));
+    }
+    const done = state.result || {};
+    const webUrl = `${String(ctx.config.webAppUrl || '').replace(/\/$/, '')}/manage/products`;
+    const note = done.stopped ? `\n${t(`b.chan.import_stopped_${done.stopped}`)}` : '';
+    return show(
+      `${t('b.chan.import_done', { created: done.created || 0, failed: done.failed || 0 })}${note}`,
+      keyboard([[urlButton(t('b.btn.open_products'), webUrl)], [button(t('b.nav.back'), 'ch', storeId)]]),
+    );
+  })().catch((err) => ctx.log?.warn?.(`channel import commit (bot) failed: ${err.message}`));
+  return null;
 }
 
 export async function toggleAutoPost(ctx, storeId) {

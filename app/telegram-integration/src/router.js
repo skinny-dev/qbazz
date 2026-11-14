@@ -488,6 +488,12 @@ async function routeCallback(ctx) {
       return channel.toggleSync(ctx, args[0]);
     case 'chb':
       return channel.backfill(ctx, args[0]);
+    case 'chi':
+      return channel.importHistory(ctx, args[0]);
+    case 'chia':
+      return channel.commitImport(ctx, args[0], args[1], false);
+    case 'chiw':
+      return channel.commitImport(ctx, args[0], args[1], true);
     case 'chd':
       return channel.disconnect(ctx, args[0]);
     case 'chr':
