@@ -139,7 +139,8 @@ export function createSeoService(ctx) {
   /** Tags, canonical and structured data for one page, as an HTML string for <head>. */
   function headHtml({ title, description, image, path, type = 'website', jsonLd = [], noindex = false }) {
     const site = 'کیوباز';
-    const full = title.includes(site) ? title : `${title} | ${site}`;
+    const long = `${title} | ${site} | بازار عمده‌فروشی`;
+    const full = title.includes(site) ? title : (long.length <= 62 ? long : `${title} | ${site}`);
     const url = abs(path);
     const tags = [
       `<title data-ssr>${esc(full)}</title>`,
@@ -185,7 +186,7 @@ ${(product.properties || []).length ? `<h2>مشخصات</h2><dl>${product.proper
 </article>
 ${related.length ? `<section><h2>محصولات دیگر ${esc(store.name)}</h2><ul>${related.map((p) => productLink(store, p)).join('')}</ul></section>` : ''}
 </main>`;
-    return { status: 200, head: headHtml({ title: product.seo?.metaTitle || `${product.title} | ${store.name}`, description, image: images[0], path, type: 'product', jsonLd }), body };
+    return { status: 200, head: headHtml({ title: product.seo?.metaTitle || `${product.title} | ${store.name} | کیوباز`, description, image: images[0], path, type: 'product', jsonLd }), body };
   }
 
   async function priceText(minor, currency) {
@@ -209,7 +210,7 @@ ${store.description ? `<p>${esc(store.description)}</p>` : ''}
 <h2>محصولات ${esc(store.name)}</h2>
 <ul>${items.map((p) => productLink(store, p)).join('')}</ul>
 </main>`;
-    return { status: 200, head: headHtml({ title: `${store.name} — فروشگاه آنلاین${store.location?.city ? ` ${store.location.city}` : ''}`, description, image: store.logoUrl, path, jsonLd }), body };
+    return { status: 200, head: headHtml({ title: `${store.name} — فروشگاه عمده‌فروشی${store.location?.city ? ` ${store.location.city}` : ''}`, description, image: store.logoUrl, path, jsonLd }), body };
   }
 
   async function renderHome() {
@@ -218,17 +219,17 @@ ${store.description ? `<p>${esc(store.description)}</p>` : ''}
     const latest = await products.find({ where: { status: 'active' }, sort: [['createdAt', 'desc']], limit: 36 });
     const bySlug = new Map(list.map((s) => [s.id, s]));
     const shown = latest.filter((p) => bySlug.has(p.storeId)).slice(0, 24);
-    const description = clip(site.about || site.tagline, 155) || 'بازار فروشگاه‌های مستقل: فروشگاه خودتان را همین امروز بسازید یا از فروشگاه‌های تلگرامی و اینستاگرامی خرید کنید.';
+    const description = clip(site.about || site.tagline, 155) || 'بازار عمده‌فروشی کیوباز: مستقیم از تولیدی‌ها و عمده‌فروش‌های پوشاک خرید کنید، یا فروشگاه خودتان را همین امروز بسازید.';
     const jsonLd = [...siteSchema(site), { '@context': 'https://schema.org', '@type': 'ItemList', name: 'فروشگاه‌های کیوباز', itemListElement: list.slice(0, 12).map((s, i) => ({ '@type': 'ListItem', position: i + 1, url: abs(`/s/${s.slug}`), name: s.name })) }];
     const body = `<main class="seo-static">
-<h1>کیوباز — بازار فروشگاه‌های مستقل</h1>
+<h1>کیوباز — بازار عمده‌فروشی</h1>
 <p>${esc(description)}</p>
 <h2>فروشگاه‌ها</h2>
 <ul>${list.map((s) => `<li><a href="/s/${esc(s.slug)}">${esc(s.name)}</a>${s.tagline ? ` — ${esc(s.tagline)}` : ''}</li>`).join('')}</ul>
 <h2>جدیدترین محصولات</h2>
 <ul>${shown.map((p) => productLink(bySlug.get(p.storeId), p)).join('')}</ul>
 </main>`;
-    return { status: 200, head: headHtml({ title: 'کیوباز — ساخت فروشگاه آنلاین و بازار فروشگاه‌های مستقل', description, path: '/', jsonLd }), body };
+    return { status: 200, head: headHtml({ title: 'کیوباز | بازار عمده‌فروشی پوشاک و خرید مستقیم از تولیدی‌ها', description, path: '/', jsonLd }), body };
   }
 
   /** A markup body ("## heading", "- bullet", "1. step") as the same words in plain HTML. */
@@ -269,7 +270,7 @@ ${store.description ? `<p>${esc(store.description)}</p>` : ''}
   async function renderLearn() {
     const items = await services.content.listPublished({ kind: 'tutorial' });
     const body = `<main class="seo-static"><h1>آموزش‌های کیوباز</h1><ul>${items.map((p) => `<li><a href="/p/${esc(p.slug)}">${esc(p.title)}</a>${p.summary ? ` — ${esc(p.summary)}` : ''}</li>`).join('')}</ul></main>`;
-    return { status: 200, head: headHtml({ title: 'آموزش‌های کیوباز', description: 'آموزش قدم‌به‌قدم ساخت فروشگاه آنلاین، افزودن محصول، دریافت پرداخت و فروش از طریق تلگرام و اینستاگرام.', path: '/learn', jsonLd: [breadcrumbs([{ name: 'کیوباز', path: '/' }, { name: 'آموزش‌ها', path: '/learn' }])] }), body };
+    return { status: 200, head: headHtml({ title: 'آموزش ساخت فروشگاه و فروش عمده', description: 'آموزش قدم‌به‌قدم ساخت فروشگاه عمده‌فروشی، افزودن محصول، دریافت پرداخت و فروش از طریق تلگرام و اینستاگرام.', path: '/learn', jsonLd: [breadcrumbs([{ name: 'کیوباز', path: '/' }, { name: 'آموزش‌ها', path: '/learn' }])] }), body };
   }
 
   const notFound = () => ({ status: 404, head: headHtml({ title: 'صفحه پیدا نشد', description: '', path: '/', noindex: true }), body: '<main class="seo-static"><h1>صفحه پیدا نشد</h1><p><a href="/">بازگشت به کیوباز</a></p></main>' });
