@@ -206,6 +206,7 @@ export function registerMeRoutes(root, core) {
     telegramFileId: ctx.body.telegramFileId,
     note: ctx.body.note,
     cardId: ctx.body.cardId,
+    planId: ctx.body.planId || null,
   })));
 
   router.post('/billing/plan', async (ctx) => {

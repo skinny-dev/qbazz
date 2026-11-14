@@ -301,6 +301,8 @@ export const en = {
   'notif.topup.requested.title': '{name} sent a top-up receipt: {amount}',
   'notif.topup.requested.ref': 'Reference: {ref}',
   'notif.topup.approved.title': 'Wallet topped up: {amount}',
+  'notif.topup.requested_plan.title': '{name} sent a receipt for the "{plan}" plan: {amount}',
+  'notif.topup.approved_plan.title': 'The "{plan}" plan is active',
   'notif.topup.declined.title': 'Top-up of {amount} was declined',
   'notif.topup.declined.default': 'We could not match the payment. Check the receipt and send it again.',
   'err.insufficient_balance': 'Not enough balance in the wallet for this',

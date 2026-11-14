@@ -10,9 +10,9 @@ const DEFAULT_SETTINGS = {
   topup: {
     // Master switch for card-to-card wallet top-ups.
     enabled: true,
-    // 'primary': everyone sees the primary card. 'rotate': sellers are spread across
+    // 'primary': everyone pays the one shared (primary) card. 'rotate': sellers are spread across
     // the active cards (stable per seller, so the card they were shown does not change).
-    cardStrategy: 'rotate',
+    cardStrategy: 'primary',
     minAmount: 10000,
     maxAmount: 100000000,
   },
@@ -54,6 +54,14 @@ export function createPaymentsService(ctx) {
 
   const format = (number) => number.replace(/(\d{4})(?=\d)/g, '$1-');
 
+  /** Whose card it is: one of the platform's own admins (a partner), or nobody in particular. */
+  async function ownerOf(accountId) {
+    if (!accountId) return null;
+    const account = await db.collection(COLLECTIONS.accounts).get(accountId);
+    if (!account || account.role !== 'admin') throw ValidationError.of('ownerAccountId', 'validation.invalid', { field: 'Owner' });
+    return account.id;
+  }
+
   /** Staff see the full number — they have to match it against receipts. */
   const present = (card) => ({ ...card, display: format(card.number), last4: card.number.slice(-4) });
 
@@ -85,7 +93,12 @@ export function createPaymentsService(ctx) {
   async function listCards(actorAccountId) {
     await services.admin.assertAdmin(actorAccountId, { allowSupport: true });
     const rows = await cards.find({ where: { archived: false }, sort: [['createdAt', 'asc']] });
-    return { items: rows.map(present) };
+    const accounts = db.collection(COLLECTIONS.accounts);
+    const items = await Promise.all(rows.map(async (row) => {
+      const owner = row.ownerAccountId ? await accounts.get(row.ownerAccountId) : null;
+      return { ...present(row), owner: owner ? { id: owner.id, displayName: owner.displayName } : null };
+    }));
+    return { items };
   }
 
   async function createCard(input = {}) {
@@ -100,6 +113,7 @@ export function createPaymentsService(ctx) {
       holder: holder.slice(0, 80),
       bank: String(input.bank || '').trim().slice(0, 40),
       label: String(input.label || '').trim().slice(0, 60),
+      ownerAccountId: await ownerOf(input.ownerAccountId),
       active: input.active !== false,
       primary: first,
       archived: false,
@@ -129,6 +143,7 @@ export function createPaymentsService(ctx) {
     }
     if (patch.bank !== undefined) next.bank = String(patch.bank).trim().slice(0, 40);
     if (patch.label !== undefined) next.label = String(patch.label).trim().slice(0, 60);
+    if (patch.ownerAccountId !== undefined) next.ownerAccountId = await ownerOf(patch.ownerAccountId);
     if (patch.active !== undefined) next.active = Boolean(patch.active);
 
     if (patch.primary === true) {
@@ -187,7 +202,9 @@ export function createPaymentsService(ctx) {
   async function snapshot(cardId) {
     if (!cardId) return null;
     const row = await cards.get(cardId);
-    return row ? { id: row.id, last4: row.number.slice(-4), holder: row.holder, bank: row.bank || null } : null;
+    if (!row) return null;
+    const owner = row.ownerAccountId ? await db.collection(COLLECTIONS.accounts).get(row.ownerAccountId) : null;
+    return { id: row.id, last4: row.number.slice(-4), holder: row.holder, bank: row.bank || null, ownerName: owner?.displayName || null };
   }
 
   function assertEnabled(settings) {

@@ -306,6 +306,8 @@ export const fa = {
   'notif.topup.requested.title': '{name} رسید شارژ فرستاد: {amount}',
   'notif.topup.requested.ref': 'کد پیگیری: {ref}',
   'notif.topup.approved.title': 'کیف پول شارژ شد: {amount}',
+  'notif.topup.requested_plan.title': '{name} برای خرید پلن «{plan}» رسید فرستاد: {amount}',
+  'notif.topup.approved_plan.title': 'پلن «{plan}» فعال شد',
   'notif.topup.declined.title': 'شارژ {amount} رد شد',
   'notif.topup.declined.default': 'پرداخت پیدا نشد. رسید را بررسی و دوباره بفرستید.',
   'err.insufficient_balance': 'موجودی کیف پول برای این کار کافی نیست',

@@ -25,7 +25,7 @@ export function createTopupsService(ctx) {
     return services.payments.topupInstructions(accountId);
   }
 
-  async function request(accountId, { amountMinor, reference = '', imageUrl = '', telegramFileId = '', note = '', cardId = null } = {}) {
+  async function request(accountId, { amountMinor, reference = '', imageUrl = '', telegramFileId = '', note = '', cardId = null, planId = null } = {}) {
     const { topup: rules } = await services.payments.getSettings();
     services.payments.assertEnabled({ topup: rules });
     const data = validate({ reference, imageUrl, telegramFileId, note }, {
@@ -34,9 +34,20 @@ export function createTopupsService(ctx) {
       telegramFileId: { type: 'string', max: 200 },
       note: { type: 'string', max: 300 },
     });
-    const amount = Number(amountMinor);
-    if (!Number.isInteger(amount) || amount <= 0) throw ValidationError.of('amount', 'err.topup_amount', { min: rules.minAmount, max: rules.maxAmount });
-    if (amount < rules.minAmount || amount > rules.maxAmount) throw ValidationError.of('amount', 'err.topup_amount', { min: rules.minAmount, max: rules.maxAmount });
+    // Paying for a plan: the amount is the plan's price (never what the browser says) and the limits for a free top-up
+    // do not apply. Approving the receipt credits that amount and switches the plan on.
+    let plan = null;
+    if (planId) {
+      plan = services.subscriptions.listPlans().find((p) => p.id === planId && p.price > 0);
+      if (!plan) throw ValidationError.of('planId', 'validation.invalid', { field: 'Plan' });
+      const sub = await services.subscriptions.summary(accountId);
+      if (sub.plan?.id === planId) throw new ConflictError('err.plan_already_on');
+    }
+    const amount = plan ? plan.price : Number(amountMinor);
+    if (!plan) {
+      if (!Number.isInteger(amount) || amount <= 0) throw ValidationError.of('amount', 'err.topup_amount', { min: rules.minAmount, max: rules.maxAmount });
+      if (amount < rules.minAmount || amount > rules.maxAmount) throw ValidationError.of('amount', 'err.topup_amount', { min: rules.minAmount, max: rules.maxAmount });
+    }
     if (!data.reference && !data.imageUrl) throw ValidationError.of('reference', 'err.receipt_required');
     if ((await topups.count({ accountId, status: 'pending' })) >= MAX_PENDING) throw new ConflictError('err.topup_too_many', { max: MAX_PENDING }, { max: MAX_PENDING });
 
@@ -49,6 +60,10 @@ export function createTopupsService(ctx) {
       imageUrl: data.imageUrl || null,
       telegramFileId: data.telegramFileId || null,
       note: data.note || null,
+      planId: plan?.id || null,
+      planName: plan ? (plan.name?.fa || plan.name?.en || plan.id) : null,
+      planApplied: null,
+      planError: null,
       // The card the seller was shown, as it was then — for the admin matching the receipt.
       card: await services.payments.snapshot(cardId),
       status: 'pending',
@@ -61,7 +76,9 @@ export function createTopupsService(ctx) {
     await services.notifications.queueForAdmins({
       type: 'admin.topup_requested',
       render: (t, locale) => ({
-        title: t('notif.topup.requested.title', { name: who?.displayName || '—', amount: formatMoney(amount, 'IRT', locale) }),
+        title: plan
+          ? t('notif.topup.requested_plan.title', { name: who?.displayName || '—', plan: plan.name?.fa || plan.id, amount: formatMoney(amount, 'IRT', locale) })
+          : t('notif.topup.requested.title', { name: who?.displayName || '—', amount: formatMoney(amount, 'IRT', locale) }),
         body: data.reference ? t('notif.topup.requested.ref', { ref: data.reference }) : '',
       }),
       data: { topupId: record.id, action: 'review_topup' },
@@ -135,12 +152,26 @@ export function createTopupsService(ctx) {
       }
     }
 
+    // A receipt for a plan: with the money in the wallet, buy the plan from it. If that cannot happen (the plan changed,
+    // a downgrade would strand something) the money stays in the wallet and the admin sees why.
+    let planApplied = null;
+    if (approved && claimed.planId) {
+      try {
+        await services.subscriptions.changePlan(claimed.accountId, claimed.planId, { actorAccountId });
+        planApplied = true;
+        await topups.update(topupId, { planApplied: true, planError: null });
+      } catch (err) {
+        planApplied = false;
+        await topups.update(topupId, { planApplied: false, planError: String(err.message || err).slice(0, 200) });
+      }
+    }
+
     await services.notifications.queue({
       accountId: claimed.accountId,
       type: approved ? 'wallet.topup_approved' : 'wallet.topup_declined',
       render: (t, locale) => ({
         title: approved
-          ? t('notif.topup.approved.title', { amount: formatMoney(claimed.amountMinor, 'IRT', locale) })
+          ? (planApplied ? t('notif.topup.approved_plan.title', { plan: claimed.planName || claimed.planId }) : t('notif.topup.approved.title', { amount: formatMoney(claimed.amountMinor, 'IRT', locale) }))
           : t('notif.topup.declined.title', { amount: formatMoney(claimed.amountMinor, 'IRT', locale) }),
         body: approved ? '' : (cleanReason || t('notif.topup.declined.default')),
       }),
@@ -148,7 +179,7 @@ export function createTopupsService(ctx) {
       priority: 'high',
     });
     await events.emit('wallet.topup_decided', { topupId, accountId: claimed.accountId, decision, actorAccountId });
-    return claimed;
+    return planApplied === null ? claimed : topups.get(topupId);
   }
 
   return { instructions, request, listMine, list, get, decide };
