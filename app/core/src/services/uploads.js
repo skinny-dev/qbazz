@@ -26,10 +26,11 @@ export function createUploadsService(ctx) {
   const rows = db.collection(COLLECTIONS.uploads);
   const dir = config.uploads.dir;
 
-  async function saveImage(accountId, base64) {
+  // `maxBytes`: a picture this server fetched itself (an AI result, a channel photo) may be larger than what a browser sends
+  async function saveImage(accountId, base64, { maxBytes = MAX_BYTES } = {}) {
     if (typeof base64 !== 'string' || !base64) throw ValidationError.of('data', 'validation.required', { field: 'Image' });
     const buffer = Buffer.from(base64.replace(/^data:[^,]*,/, ''), 'base64');
-    if (!buffer.length || buffer.length > MAX_BYTES) throw ValidationError.of('data', 'err.upload_size');
+    if (!buffer.length || buffer.length > maxBytes) throw ValidationError.of('data', 'err.upload_size');
     const kind = sniff(buffer);
     if (!kind) throw ValidationError.of('data', 'err.upload_type');
     if ((await rows.count({ accountId })) >= (config.uploads.maxPerAccount || 3000)) throw new ConflictError('err.upload_limit');

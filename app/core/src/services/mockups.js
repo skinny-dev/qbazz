@@ -77,7 +77,8 @@ export function createMockupsService(ctx) {
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
       if (!res.ok) return url;
-      const saved = await services.uploads.saveImage(accountId, Buffer.from(await res.arrayBuffer()).toString('base64'));
+      // the provider's PNGs run to several MB: far over a browser upload's limit, and still worth keeping
+      const saved = await services.uploads.saveImage(accountId, Buffer.from(await res.arrayBuffer()).toString('base64'), { maxBytes: 10_000_000 });
       return saved.url;
     } catch (err) {
       log.warn(`mockup result not kept (${err.message}); the provider's link is used`);

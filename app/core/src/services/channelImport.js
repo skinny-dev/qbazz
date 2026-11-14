@@ -148,7 +148,7 @@ export function createChannelImportService(ctx) {
           for (const src of draft.photos.slice(0, PHOTOS_PER_PRODUCT)) {
             const buffer = await download(src);
             if (!buffer) continue;
-            try { urls.push((await services.uploads.saveImage(record.ownerAccountId, buffer.toString('base64'))).url); } catch (err) {
+            try { urls.push((await services.uploads.saveImage(record.ownerAccountId, buffer.toString('base64'), { maxBytes: 6_000_000 })).url); } catch (err) {
               // the account's picture allowance is used up: stop here, rather than add products with no photos
               if (err.key === 'err.upload_limit') throw err;
               /* too large or not a picture: skip this photo */
