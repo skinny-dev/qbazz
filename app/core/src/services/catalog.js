@@ -444,12 +444,12 @@ export function createCatalogService(ctx) {
       }
       await products.delete(productId);
       await services.stores.refreshDiscoverability(current.storeId);
-      await events.emit('product.deleted', { storeId: current.storeId, productId });
+      await events.emit('product.deleted', { storeId: current.storeId, productId, channelLink: current.channelLink || null });
       return { ...current, deleted: true };
     }
     const archived = await products.update(productId, { status: 'archived' });
     await services.stores.refreshDiscoverability(current.storeId);
-    await events.emit('product.archived', { storeId: current.storeId, productId });
+    await events.emit('product.archived', { storeId: current.storeId, productId, channelLink: current.channelLink || null });
     return archived;
   }
 

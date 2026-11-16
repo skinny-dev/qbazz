@@ -117,6 +117,7 @@ function httpClient(config, locale = null) {
     generateProductJournal: (accountId, storeId, payload) => post(`/stores/${storeId}/products/journal`, accountId, payload),
     publishProduct: (accountId, storeId, payload) => post(`/stores/${storeId}/products/publish`, accountId, payload).then((r) => r.product),
     updateProduct: (accountId, storeId, productId, payload) => patch(`/stores/${storeId}/products/${productId}`, accountId, payload),
+    deleteProduct: (accountId, storeId, productId) => del(`/stores/${storeId}/products/${productId}`, accountId),
     storeCards: (accountId, storeId) => get(`/stores/${storeId}/payment-cards`, accountId),
     addStoreCard: (accountId, storeId, body) => post(`/stores/${storeId}/payment-cards`, accountId, body),
     updateStoreCard: (accountId, storeId, cardId, body) => patch(`/stores/${storeId}/payment-cards/${cardId}`, accountId, body),
@@ -318,6 +319,7 @@ function directClient(core, locale = null) {
       return product;
     },
     updateProduct: (accountId, storeId, productId, payload) => s.catalog.updateProduct(productId, payload, { actorAccountId: accountId }),
+    deleteProduct: (accountId, storeId, productId) => s.catalog.deleteProduct(productId, { actorAccountId: accountId }),
     storeCards: (accountId, storeId) => s.storeCards.list(storeId, { actorAccountId: accountId }),
     addStoreCard: (accountId, storeId, body) => s.storeCards.add(storeId, body, { actorAccountId: accountId }),
     updateStoreCard: (accountId, storeId, cardId, body) => s.storeCards.update(storeId, cardId, body, { actorAccountId: accountId }),

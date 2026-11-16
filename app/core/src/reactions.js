@@ -126,7 +126,21 @@ export function wireReactions(ctx) {
   const POST_FIELDS = ['price', 'compareAtPrice', 'status', 'stock', 'title', 'description', 'priceVisibility'];
   events.on('product.updated', async ({ payload }) => {
     if (!payload.changed?.some((field) => POST_FIELDS.includes(field))) return;
+    // archived from the shop's own screen: the post comes down rather than being re-worded
+    if (payload.changed.includes('status') && payload.product?.status === 'archived') {
+      await services.channels.queueRemoval(payload.product.storeId, payload.productId, payload.product.channelLink);
+      return;
+    }
     await services.channels.queueEdit(payload.productId);
+  });
+
+  // A product taken off the shop (deleted, or archived) comes off the channel as well - the post it was announced in is
+  // removed, so the channel never advertises something a buyer can no longer open.
+  events.on('product.deleted', async ({ payload }) => {
+    await services.channels.queueRemoval(payload.storeId, payload.productId, payload.channelLink);
+  });
+  events.on('product.archived', async ({ payload }) => {
+    await services.channels.queueRemoval(payload.storeId, payload.productId, payload.channelLink);
   });
 
   events.on('store.status_changed', async ({ payload }) => {

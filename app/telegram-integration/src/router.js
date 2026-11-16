@@ -420,6 +420,10 @@ async function routeCallback(ctx) {
       return seller.setDiscount(ctx, args[0], args[1], args[2]);
     case 'spa':
       return seller.toggleProductArchive(ctx, args[0], args[1]);
+    case 'spx':
+      return seller.confirmProductDelete(ctx, args[0], args[1]);
+    case 'spxy':
+      return seller.deleteProduct(ctx, args[0], args[1]);
     case 'spay':
       return seller.reviewPayment(ctx, args[0], args[1]);
     case 'spayno':

@@ -60,8 +60,21 @@ export function createChannelPoster({ core, api, config, log }) {
     }
   }
 
+  /** The product is gone from the shop: take its post out of the channel. Already gone there is the same result. */
+  async function remove(post) {
+    try {
+      await api.deleteMessage(post.chatId, Number(post.messageId));
+      await core.markChannelPosted(post.id, { ok: true });
+      log.info(`removed channel post ${post.messageId} (product no longer sold)`);
+    } catch (err) {
+      await core.markChannelPosted(post.id, { ok: false, error: err.message }).catch(() => null);
+      log.warn(`channel post removal ${post.id} failed: ${err.message}`);
+    }
+  }
+
   async function publish(post) {
     if (post.kind === 'edit') return edit(post);
+    if (post.kind === 'delete') return remove(post);
     try {
       if (!post.product) {
         await core.markChannelPosted(post.id, { ok: false, error: 'nothing to post' });

@@ -384,6 +384,23 @@ export function createChannelsService(ctx) {
     });
   }
 
+  /**
+   * A product left the shop: queue the removal of the post WE made for it. A post the seller wrote in the channel
+   * themselves (origin 'channel') is theirs and stays, whatever happens on the site.
+   */
+  async function queueRemoval(storeId, productId, link) {
+    if (!link || link.origin !== 'qbazz' || !link.messageId) return null;
+    const record = await stores.get(storeId);
+    const channel = record?.channels?.telegram;
+    if (!channel || channel.chatId !== link.chatId) return null;
+    // anything still waiting to be posted or edited for this product is pointless now
+    await posts.deleteWhere({ productId, status: { $in: ['draft', 'queued'] } });
+    return posts.insert({
+      id: newId('cpt'), storeId, chatId: link.chatId, kind: 'delete', productId, reason: 'product_removed', status: 'queued',
+      caption: null, suggested: null, attempts: 0, messageId: String(link.messageId), hasPhoto: Boolean(link.hasPhoto), error: null, postedAt: null,
+    });
+  }
+
   // -- The post queue --------------------------------------------------------
 
   /**
@@ -599,6 +616,8 @@ export function createChannelsService(ctx) {
     const out = [];
     for (const row of rows) {
       const product = row.productId ? await services.catalog.getProduct(row.productId) : null;
+      // a removal has no product any more: the message to take down is all it needs
+      if (row.kind === 'delete') { out.push({ ...row, product: null, store: null }); continue; }
       // The product was archived between queueing and posting.
       if (row.kind === 'product' && (!product || product.status !== 'active')) {
         await posts.update(row.id, { status: 'cancelled', error: 'product no longer active' });
@@ -632,7 +651,9 @@ export function createChannelsService(ctx) {
       if (post.kind === 'product' && post.productId && messageId) {
         await linkProduct(post.productId, { chatId: post.chatId, messageId: String(messageId), messageIds: [String(messageId)], hasPhoto: Boolean(hasPhoto), origin: 'qbazz' });
       }
-      const updated = await posts.update(postId, { status: 'posted', ...(post.kind === 'edit' ? {} : { messageId }), postedAt: new Date().toISOString(), error: null });
+      // taken down: the product no longer points at a message that is not there
+      if (post.kind === 'delete' && post.productId) await db.collection(COLLECTIONS.products).update(post.productId, { channelLink: null }).catch(() => null);
+      const updated = await posts.update(postId, { status: 'posted', ...(post.kind === 'edit' || post.kind === 'delete' ? {} : { messageId }), postedAt: new Date().toISOString(), error: null });
       await events.emit('channel.posted', { storeId: post.storeId, postId, productId: post.productId, messageId });
       return updated;
     }
@@ -710,6 +731,7 @@ export function createChannelsService(ctx) {
     setButtons,
     queueProduct,
     queueEdit,
+    queueRemoval,
     applyChannelEdit,
     availabilitySignal,
     linkProduct,

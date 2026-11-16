@@ -305,4 +305,10 @@ export const seller = {
   'b.pub.instagram': 'Instagram',
   'b.pub.soon': 'Coming soon',
   'b.pub.connect_first': '📣 Connect a channel to publish to Telegram',
+  'b.sel.delete': '🗑 Delete',
+  'b.sel.delete_title': '🗑 Delete this product?',
+  'b.sel.delete_warn': 'The product and its photos are removed, and its post is taken off the channel. This cannot be undone. If you only want it hidden, use Archive.',
+  'b.sel.delete_yes': '🗑 Yes, delete it',
+  'b.sel.delete_toast': '🗑 Product deleted',
+  'b.sel.delete_archived_toast': 'This product has orders, so it was archived instead of deleted.',
 };

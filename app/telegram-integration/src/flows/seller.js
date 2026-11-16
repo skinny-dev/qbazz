@@ -302,7 +302,7 @@ export async function showSellerProductDetail(ctx, storeId, productId) {
     rows.push([button(t('b.sel.edit_price'), 'spp', storeId, productId), button(t('b.sel.edit_stock'), 'sps', storeId, productId)]);
     rows.push([button(discounted ? t('b.sel.change_discount') : t('b.sel.add_discount'), 'spd', storeId, productId)]);
   }
-  rows.push([button(archived ? t('b.sel.restore') : t('b.sel.archive'), 'spa', storeId, productId)]);
+  rows.push([button(archived ? t('b.sel.restore') : t('b.sel.archive'), 'spa', storeId, productId), button(t('b.sel.delete'), 'spx', storeId, productId)]);
   rows.push([button(t('b.btn.view_product'), 'prod', productId)]);
   rows.push([button(t('b.nav.back'), 'sp', storeId, '0')]);
 
@@ -525,6 +525,35 @@ export async function setDiscount(ctx, storeId, productId, percent) {
     await ctx.answer(ctx.err(err), { alert: true });
   }
   return showSellerProductDetail(ctx, storeId, productId);
+}
+
+/** "Delete" asks once: the product, its photos and its channel post go, and there is no undo. */
+export async function confirmProductDelete(ctx, storeId, productId) {
+  const { t } = ctx;
+  const product = await ownProduct(ctx, storeId, productId);
+  if (!product) return null;
+  await ctx.answer();
+  return ctx.screen(
+    lines(b(t('b.sel.delete_title')), esc(product.title), '', esc(t('b.sel.delete_warn'))),
+    keyboard([
+      [button(t('b.sel.delete_yes'), 'spxy', storeId, productId)],
+      [button(t('b.nav.cancel'), 'spr', storeId, productId)],
+    ]),
+  );
+}
+
+export async function deleteProduct(ctx, storeId, productId) {
+  const product = await ownProduct(ctx, storeId, productId);
+  if (!product) return null;
+  try {
+    const result = await ctx.core.deleteProduct(ctx.account.id, storeId, productId);
+    // a product somebody ordered is archived instead: say so, so the seller is not surprised to still see it
+    await ctx.answer(result?.deleted === false || result?.status === 'archived' ? ctx.t('b.sel.delete_archived_toast') : ctx.t('b.sel.delete_toast'), { alert: result?.status === 'archived' });
+  } catch (err) {
+    await ctx.answer(ctx.err(err), { alert: true });
+    return showSellerProductDetail(ctx, storeId, productId);
+  }
+  return showSellerProducts(ctx, storeId);
 }
 
 export async function toggleProductArchive(ctx, storeId, productId) {
