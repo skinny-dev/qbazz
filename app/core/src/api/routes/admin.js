@@ -55,6 +55,12 @@ export function registerAdminRoutes(root, core) {
 
   router.post('/accounts/:id/role', async (ctx) => services.admin.grantRole(requireAuth(ctx).id, ctx.params.id, ctx.body.role));
 
+  // Files products under the category their words name. Dry run unless {"apply": true}; {"storeId"} narrows it to one shop.
+  router.post('/catalog/recategorize', async (ctx) => {
+    await services.admin.assertAdmin(requireAuth(ctx).id);
+    return services.catalog.recategorize({ apply: ctx.body?.apply === true, storeId: ctx.body?.storeId || null, assignments: Array.isArray(ctx.body?.assignments) ? ctx.body.assignments : null });
+  });
+
   router.get('/lookup', async (ctx) => services.admin.lookup(requireAuth(ctx).id, ctx.query.q));
 
   router.get('/audit', async (ctx) => {

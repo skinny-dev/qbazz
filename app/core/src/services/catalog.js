@@ -5,6 +5,7 @@ import { newId } from '../util/ids.js';
 import { slugify, uniqueSlug } from '../util/slug.js';
 import { validate } from '../util/validate.js';
 import { normalizeText } from '../util/text.js';
+import { buildCategoryGuesser } from '../util/categoryGuess.js';
 import { translate, hasKey } from '../i18n/index.js';
 
 /**
@@ -453,6 +454,39 @@ export function createCatalogService(ctx) {
     return archived;
   }
 
+  /**
+   * Files existing products under the category their own words name. Only products with NO category, a retired one, or
+   * the import fallback ("tunic") are moved - what a seller chose on purpose is left alone - and only when the title,
+   * tags or properties actually name a garment. Dry run unless `apply`.
+   */
+  async function recategorize({ apply = false, storeId = null, limit = 5000, assignments = null } = {}) {
+    const rows = flattenTaxonomy().filter((row) => row.parentSlug);
+    const guess = buildCategoryGuesser(rows.map((row) => ({ slug: row.slug, nameFa: row.fa })));
+    const all = await categories.find({});
+    const bySlug = new Map(all.map((c) => [c.slug, c]));
+    const byId = new Map(all.map((c) => [c.id, c]));
+    const list = await products.find({ where: storeId ? { storeId } : {}, limit });
+
+    const result = { total: list.length, changed: 0, unchanged: 0, noClue: 0, byCategory: {}, samples: [], applied: Boolean(apply) };
+    // a decision someone already made (a person looked at the photo): taken as given, whatever the product has now
+    const decided = new Map((assignments || []).map((x) => [x.productId, x.slug]));
+    for (const product of list) {
+      const current = byId.get(product.categoryId);
+      const replaceable = !current || current.retired || current.slug === 'tunic' || decided.has(product.id);
+      if (!replaceable) { result.unchanged += 1; continue; }
+      const slug = decided.get(product.id) || guess(product);
+      if (!slug) { result.noClue += 1; continue; }
+      if (slug === current?.slug) { result.unchanged += 1; continue; }
+      const target = bySlug.get(slug);
+      if (!target) continue;
+      result.changed += 1;
+      result.byCategory[slug] = (result.byCategory[slug] || 0) + 1;
+      if (result.samples.length < 12) result.samples.push({ title: product.title, from: current?.slug || null, to: slug });
+      if (apply) await updateProduct(product.id, { categoryId: target.id });
+    }
+    return result;
+  }
+
   async function getProduct(idOrSlug, { storeId } = {}) {
     if (!idOrSlug) return null;
     const byId = await products.get(idOrSlug);
@@ -589,6 +623,7 @@ export function createCatalogService(ctx) {
     clearDiscount,
     discountStore,
     deleteProduct,
+    recategorize,
     getProduct,
     getProductOrFail,
     listProducts,
