@@ -1,3 +1,4 @@
+import { parseDateInput } from '../util/jalali.js';
 import { COLLECTIONS } from '../models/schemas.js';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '../errors.js';
 import { newId } from '../util/ids.js';
@@ -463,12 +464,21 @@ export function createChannelsService(ctx) {
   }
 
   /** "Post everything I already have" — used right after connecting. */
-  async function backfill(storeId, { actorAccountId, limit = 20 } = {}) {
+  async function backfill(storeId, { actorAccountId, limit = 20, from = null, to = null } = {}) {
     const record = await services.stores.resolve(storeId);
     if (actorAccountId) await services.stores.assertCan(record.id, actorAccountId, 'products.manage');
     if (!record.channels?.telegram) throw new NotFoundError('Connected channel');
 
-    const { items } = await services.catalog.listProducts({ storeId: record.id, status: 'active', limit, sort: [['createdAt', 'asc']] });
+    // a range of dates (whole days) narrows it to the products added then; no range keeps the old "the first few"
+    const day = (v) => (v ? (/^\d{4}-\d{2}-\d{2}/.test(v) ? String(v).slice(0, 10) : parseDateInput(v)) : null);
+    const [a, b] = [day(from), day(to)];
+    if ((from && !a) || (to && !b)) throw ValidationError.of('from', 'validation.invalid', { field: 'Date' });
+    let { items } = await services.catalog.listProducts({ storeId: record.id, status: 'active', limit: a || b ? 500 : limit, sort: [['createdAt', 'asc']] });
+    if (a || b) {
+      const lo = a ? Date.parse(`${a}T00:00:00Z`) : -Infinity;
+      const hi = b ? Date.parse(`${b}T23:59:59Z`) : Infinity;
+      items = items.filter((p) => { const t = Date.parse(p.createdAt); return t >= lo && t <= hi; });
+    }
     let queued = 0;
     for (const product of items) {
       const post = await queueProduct(product.id, { reason: 'backfill' });

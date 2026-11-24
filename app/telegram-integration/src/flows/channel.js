@@ -1,5 +1,6 @@
 import { button, keyboard, urlButton } from '../telegram/keyboard.js';
 import { b, esc, i, lines } from '../render.js';
+import { parseDateRange } from '../util/jalali.js';
 
 /**
  * Connecting a shop's Telegram channel.
@@ -60,8 +61,8 @@ export async function showChannel(ctx, storeId) {
       [button(channel.autoPost ? t('b.btn.auto_off') : t('b.btn.auto_on'), 'cha', storeId)],
       [button(channel.reviewBeforePost === false ? t('b.btn.review_on') : t('b.btn.review_off'), 'chr', storeId)],
       [button(channel.syncPosts ? t('b.btn.sync_off') : t('b.btn.sync_on'), 'chs', storeId)],
-      [button(t('b.btn.import_history'), 'chi', storeId)],
-      [button(t('b.btn.queue_existing'), 'chb', storeId)],
+      [button(t('b.btn.import_history'), 'chip', storeId)],
+      [button(t('b.btn.queue_existing'), 'chbp', storeId)],
       channel.username ? [urlButton(t('b.btn.open_channel', { handle }), `https://t.me/${channel.username}`)] : [],
       [button(t('b.btn.disconnect'), 'chd', storeId)],
       [button(t('b.nav.dashboard'), 'sd', storeId)],
@@ -199,8 +200,8 @@ export async function handleChannelInput(ctx) {
         esc(t('b.chan.connected_note')),
       ),
       keyboard([
-        [button(t('b.btn.import_history'), 'chi', storeId)],
-        [button(t('b.btn.post_now'), 'chb', storeId)],
+        [button(t('b.btn.import_history'), 'chip', storeId)],
+        [button(t('b.btn.post_now'), 'chbp', storeId)],
         [button(t('b.btn.channel_settings'), 'ch', storeId), button(t('b.btn.dashboard'), 'sd', storeId)],
       ]),
     );
@@ -220,7 +221,55 @@ const sleep = (ms) => new Promise((resolve) => { const t = setTimeout(resolve, m
  * post the reader was sure about (the rest wait for a look on the site). The work runs in the background - the bot
  * keeps answering everyone else - and the message the person is looking at is the progress bar.
  */
-export async function importHistory(ctx, storeId) {
+const dayAgo = (days) => new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+const today = () => new Date().toISOString().slice(0, 10);
+const PRESETS = { all: () => ({}), w: () => ({ from: dayAgo(7), to: today() }), m: () => ({ from: dayAgo(30), to: today() }) };
+
+/** Step one of both directions: which days? A few buttons, or the days typed in the Persian calendar. */
+export async function chooseRange(ctx, storeId, direction) {
+  const { t } = ctx;
+  await ctx.answer();
+  const [pick, typed] = direction === 'import' ? ['chir', 'chid'] : ['chbr', 'chbd'];
+  return ctx.screen(
+    lines(b(t(direction === 'import' ? 'b.chan.range_title_in' : 'b.chan.range_title_out')), '', esc(t('b.chan.range_lead'))),
+    keyboard([
+      [button(t('b.chan.range_all'), pick, storeId, 'all')],
+      [button(t('b.chan.range_week'), pick, storeId, 'w'), button(t('b.chan.range_month'), pick, storeId, 'm')],
+      [button(t('b.chan.range_dates'), typed, storeId)],
+      [button(t('b.nav.back'), 'ch', storeId)],
+    ]),
+  );
+}
+
+export async function askRange(ctx, storeId, direction) {
+  const { t } = ctx;
+  await ctx.answer();
+  await ctx.setState({ awaiting: 'chrange', rangeStoreId: storeId, rangeDirection: direction });
+  return ctx.reply(lines(b(t('b.chan.range_ask')), '', esc(t('b.chan.range_example'))), keyboard([[button(t('b.nav.cancel'), 'ch', storeId)]]));
+}
+
+/** The seller typed the days. */
+export async function handleRangeInput(ctx) {
+  if (ctx.state.awaiting !== 'chrange') return false;
+  const { t } = ctx;
+  const storeId = ctx.state.rangeStoreId;
+  const range = parseDateRange(ctx.text || '');
+  if (!range) {
+    await ctx.reply(lines(esc(t('b.chan.range_bad')), '', esc(t('b.chan.range_example'))));
+    return true;
+  }
+  const direction = ctx.state.rangeDirection;
+  await ctx.clearState(['awaiting', 'rangeStoreId', 'rangeDirection']);
+  const clean = Object.fromEntries(Object.entries(range).filter(([, v]) => v));
+  if (direction === 'import') await importHistory(ctx, storeId, clean);
+  else await backfill(ctx, storeId, clean);
+  return true;
+}
+
+export async function importWithPreset(ctx, storeId, preset) { return importHistory(ctx, storeId, (PRESETS[preset] || PRESETS.all)()); }
+export async function backfillWithPreset(ctx, storeId, preset) { return backfill(ctx, storeId, (PRESETS[preset] || PRESETS.all)()); }
+
+export async function importHistory(ctx, storeId, range = {}) {
   const { t } = ctx;
   const channel = await ctx.core.getChannel(ctx.account.id, storeId);
   await ctx.answer();
@@ -231,7 +280,7 @@ export async function importHistory(ctx, storeId) {
 
   let job;
   try {
-    job = await ctx.core.channelImportStart(ctx.account.id, storeId, channel.username);
+    job = await ctx.core.channelImportStart(ctx.account.id, storeId, channel.username, range);
   } catch (err) {
     return ctx.reply(`⚠️ ${esc(ctx.err(err))}`, keyboard([[button(t('b.nav.back'), 'ch', storeId)]]));
   }
@@ -330,8 +379,14 @@ export async function toggleSync(ctx, storeId) {
   return showChannel(ctx, storeId);
 }
 
-export async function backfill(ctx, storeId) {
-  const result = await ctx.core.backfillChannel(ctx.account.id, storeId);
+export async function backfill(ctx, storeId, range = {}) {
+  let result;
+  try {
+    result = await ctx.core.backfillChannel(ctx.account.id, storeId, range);
+  } catch (err) {
+    await ctx.answer(ctx.err(err), { alert: true });
+    return showChannel(ctx, storeId);
+  }
   await ctx.answer(
     result.queued ? ctx.t('b.chan.toast_queued', { count: result.queued }) : ctx.t('b.chan.toast_nothing'),
     { alert: !result.queued },

@@ -55,7 +55,8 @@ export function parsePage(html, username) {
  * Walks a channel from its newest post backwards. Polite on purpose: one request at a time, a pause between pages,
  * and hard caps on pages and posts, so a channel with ten years of history cannot hold a server up.
  */
-export async function crawlChannel(username, { fetchImpl = fetch, maxPages = 300, maxPosts = 3000, delayMs = 350, signal, onPage } = {}) {
+export async function crawlChannel(username, { fetchImpl = fetch, maxPages = 300, maxPosts = 3000, delayMs = 350, signal, onPage, since = null } = {}) {
+  const sinceMs = since ? Date.parse(since) : null;
   const found = new Map();
   let before = null;
   let pages = 0;
@@ -82,6 +83,11 @@ export async function crawlChannel(username, { fetchImpl = fetch, maxPages = 300
     if (pages === 1 && !page.posts.length) throw Object.assign(new Error('This channel has no public preview (private channel, or the name is wrong).'), { code: 'no_public_preview' });
     for (const post of page.posts) found.set(post.id, post);
     onPage?.({ pages, posts: found.size });
+    // a date range: this page already reaches back before its start, so nothing older is wanted
+    if (sinceMs !== null) {
+      const dated = page.posts.map((p) => Date.parse(p.date)).filter(Number.isFinite);
+      if (dated.length && Math.min(...dated) < sinceMs) break;
+    }
     if (!page.before || (before !== null && page.before >= before)) break;
     before = page.before;
     if (delayMs) await new Promise((r) => setTimeout(r, delayMs));

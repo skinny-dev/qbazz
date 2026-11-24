@@ -176,7 +176,7 @@ export function registerStoreRoutes(root, core) {
 
   // -- Bringing a public Telegram channel's history in, reviewed before anything goes live ----------------
 
-  router.post('/:id/channel-import', async (ctx) => status(201, await services.channelImport.start(requireAuth(ctx).id, ctx.params.id, { channel: ctx.body?.channel })));
+  router.post('/:id/channel-import', async (ctx) => status(201, await services.channelImport.start(requireAuth(ctx).id, ctx.params.id, { channel: ctx.body?.channel, from: ctx.body?.from || null, to: ctx.body?.to || null })));
   router.get('/:id/channel-import/current', async (ctx) => ({ job: await services.channelImport.current(requireAuth(ctx).id, ctx.params.id) }));
   router.get('/:id/channel-import/:jobId', async (ctx) => services.channelImport.get(requireAuth(ctx).id, ctx.params.id, ctx.params.jobId));
   router.post('/:id/channel-import/:jobId/commit', async (ctx) => services.channelImport.commit(requireAuth(ctx).id, ctx.params.id, ctx.params.jobId, { items: ctx.body?.items }));
@@ -480,7 +480,7 @@ export function registerStoreRoutes(root, core) {
   router.post('/:id/channel/backfill', async (ctx) => {
     const account = requireAuth(ctx);
     const record = await services.stores.resolve(ctx.params.id);
-    return services.channels.backfill(record.id, { actorAccountId: account.id, limit: Number(ctx.body.limit) || 20 });
+    return services.channels.backfill(record.id, { actorAccountId: account.id, limit: Number(ctx.body.limit) || 20, from: ctx.body.from || null, to: ctx.body.to || null });
   });
 
   /**

@@ -5,6 +5,7 @@ import { normalizeText } from '../util/text.js';
 import { toMinor } from '../util/money.js';
 import { boilerplate, readPost } from '../util/postReader.js';
 import { channelName, crawlChannel, isTelegramPhoto } from '../util/telegramPublic.js';
+import { parseDateInput } from '../util/jalali.js';
 import { telegramFetch } from '../util/telegramFetch.js';
 
 const PHOTOS_PER_PRODUCT = 8;
@@ -43,16 +44,26 @@ export function createChannelImportService(ctx) {
     };
   }
 
-  async function start(accountId, storeId, { channel } = {}) {
+  /** "from"/"to" as the seller gave them (ISO, or Persian text); whole days, the last one included. */
+  function readRange(from, to) {
+    const a = from ? (/^\d{4}-\d{2}-\d{2}/.test(from) ? String(from).slice(0, 10) : parseDateInput(from)) : null;
+    const b = to ? (/^\d{4}-\d{2}-\d{2}/.test(to) ? String(to).slice(0, 10) : parseDateInput(to)) : null;
+    if ((from && !a) || (to && !b)) throw ValidationError.of('from', 'validation.invalid', { field: 'Date' });
+    if (a && b && a > b) throw ValidationError.of('to', 'validation.invalid', { field: 'Date' });
+    return a || b ? { from: a, to: b } : null;
+  }
+
+  async function start(accountId, storeId, { channel, from = null, to = null } = {}) {
     const record = await services.stores.resolve(storeId);
     await services.stores.assertCan(record.id, accountId, 'products.manage');
     const username = channelName(channel);
     if (!username) throw ValidationError.of('channel', 'err.import_channel_name');
+    const range = readRange(from, to);
     const busy = await jobs.findOne((j) => j.storeId === record.id && IN_PROGRESS.includes(j.status));
     if (busy) throw new ConflictError('err.import_busy');
 
     const job = await jobs.insert({
-      id: newId('cim'), storeId: record.id, accountId, channel: username, status: 'reading', error: null,
+      id: newId('cim'), storeId: record.id, accountId, channel: username, range, status: 'reading', error: null,
       progress: { pages: 0, posts: 0, imported: 0, total: 0 }, items: [], skipped: {}, truncated: false, result: null,
     });
     // Reading takes a while (a page every moment or so): the request returns now and the screen polls.
@@ -68,10 +79,19 @@ export function createChannelImportService(ctx) {
     const record = await services.stores.get(job.storeId);
     let last = 0;
     const crawl = await crawlChannel(job.channel, {
-      fetchImpl, delayMs,
+      fetchImpl, delayMs, since: job.range?.from ? `${job.range.from}T00:00:00Z` : null,
       onPage: ({ pages, posts }) => { if (pages - last >= 1) { last = pages; jobs.update(jobId, { progress: { ...job.progress, pages, posts } }).catch(() => {}); } },
     });
 
+    // only the days asked for: a post is in when its date falls inside [from 00:00, to 23:59:59] (UTC days, as Telegram dates them)
+    const fromMs = job.range?.from ? Date.parse(`${job.range.from}T00:00:00Z`) : null;
+    const toMs = job.range?.to ? Date.parse(`${job.range.to}T23:59:59Z`) : null;
+    const inRange = (post) => {
+      const t = Date.parse(post.date);
+      if (!Number.isFinite(t)) return fromMs === null && toMs === null;
+      return (fromMs === null || t >= fromMs) && (toMs === null || t <= toMs);
+    };
+    const wanted = crawl.posts.filter(inRange);
     const boiler = boilerplate(crawl.posts.map((p) => p.text));
     const leaves = (await services.catalog.listCategories({ tree: true, locale: 'fa' })).flatMap((g) => g.children || []);
     const guess = categoryGuesser(leaves);
@@ -81,7 +101,7 @@ export function createChannelImportService(ctx) {
 
     // Newest first: that is what a seller expects to see at the top of the list.
     const merged = new Map();
-    for (const post of [...crawl.posts].reverse()) {
+    for (const post of [...wanted].reverse()) {
       if (post.replyTo) { bump('reply'); continue; }
       const read = readPost(post.text, { boiler, hasPhoto: post.photos.length > 0 });
       if (!read.usable) { bump(read.reason); continue; }
@@ -98,7 +118,7 @@ export function createChannelImportService(ctx) {
       });
       if (merged.size >= MAX_ITEMS) break;
     }
-    await jobs.update(jobId, { status: 'ready', items: [...merged.values()], skipped, truncated: crawl.truncated, progress: { pages: crawl.pages, posts: crawl.posts.length, imported: 0, total: merged.size } });
+    await jobs.update(jobId, { status: 'ready', items: [...merged.values()], skipped, truncated: crawl.truncated, progress: { pages: crawl.pages, posts: wanted.length, imported: 0, total: merged.size } });
   }
 
   function view(job, { items = true } = {}) {

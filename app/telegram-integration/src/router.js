@@ -63,6 +63,7 @@ async function routeMessage(ctx) {
   if (await seller.handleMockupPromptInput(ctx)) return null;
   if (await seller.handleDraftMockupPromptInput(ctx)) return null;
   if (await seller.handleQuickAddDetailInput(ctx)) return null;
+  if (await channel.handleRangeInput(ctx)) return null;
   if (await channel.handleChannelInput(ctx)) return null;
   if (await draft.handleDraftInput(ctx)) return null;
   if (await admin.handleAdminInput(ctx)) return null;
@@ -492,6 +493,19 @@ async function routeCallback(ctx) {
       return channel.toggleSync(ctx, args[0]);
     case 'chb':
       return channel.backfill(ctx, args[0]);
+    case 'chip':
+      return channel.chooseRange(ctx, args[0], 'import');
+    case 'chir':
+      return channel.importWithPreset(ctx, args[0], args[1]);
+    case 'chid':
+      return channel.askRange(ctx, args[0], 'import');
+    case 'chbp':
+      return channel.chooseRange(ctx, args[0], 'export');
+    case 'chbr':
+      await ctx.answer();
+      return channel.backfillWithPreset(ctx, args[0], args[1]);
+    case 'chbd':
+      return channel.askRange(ctx, args[0], 'export');
     case 'chi':
       return channel.importHistory(ctx, args[0]);
     case 'chia':
