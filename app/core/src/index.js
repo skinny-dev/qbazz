@@ -15,6 +15,7 @@ import { createCommentsService } from './services/comments.js';
 import { createGatewayService } from './services/gateway.js';
 import { createContentService } from './services/content.js';
 import { createUploadsService } from './services/uploads.js';
+import { createVideosService } from './services/videos.js';
 import { createTelegramService } from './services/telegram.js';
 import { createStoresService } from './services/stores.js';
 import { createCatalogService } from './services/catalog.js';
@@ -88,6 +89,7 @@ export async function createCore({ env = process.env, config: overrides = {}, st
   ctx.services.priceRequests = createPriceRequestsService(ctx);
   ctx.services.comments = createCommentsService(ctx);
   ctx.services.uploads = createUploadsService(ctx);
+  ctx.services.videos = createVideosService(ctx);
   ctx.services.notifications = createNotificationsService(ctx);
   ctx.services.analytics = createAnalyticsService(ctx);
   ctx.services.admin = createAdminService(ctx);
@@ -104,6 +106,7 @@ export async function createCore({ env = process.env, config: overrides = {}, st
   await ctx.services.content.seedDefaults();
   await ctx.services.channelImport.recover();
   await ctx.services.mockups.recover();
+  await ctx.services.videos.recover();
   try {
     const moved = await ctx.services.uploads.rebase();
     if (moved) log.info(`${moved} record(s) pointed at ${config.platform.apiBaseUrl}/media/u/`);

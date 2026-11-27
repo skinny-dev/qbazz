@@ -222,6 +222,11 @@ export const productSchema = {
    * URL for everything else (search, the web storefront, product pages).
    */
   telegramFileIds: { type: 'array', of: { type: 'string' }, default: () => [] },
+  // One short video per product: the web copy this server made (services/videos.js) and its still frame
+  videoUrl: { type: 'string', max: 300 },
+  videoPoster: { type: 'string', max: 300 },
+  /** The Telegram file_id of that video when it came from Telegram: resending it costs nothing. */
+  telegramVideoId: { type: 'string', max: 200 },
   categoryId: { type: 'string', max: 64 },
   tags: { type: 'array', of: { type: 'string' }, default: () => [] },
   stock: { type: 'int', min: 0, nullable: true },

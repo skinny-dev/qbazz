@@ -239,7 +239,22 @@ export function createChannelsService(ctx) {
     return product;
   }
 
-  async function ingestChannelPost({ chatId, text = '', photo = null, photos = null, fileIds = null, messageId = null, messageIds = null, replyToMessageId = null }) {
+  /**
+   * The post's video, fetched from Telegram, made web-light and put on the product. Runs after the product exists: a
+   * slow or failed conversion never holds back (or loses) the product itself.
+   */
+  async function attachVideo(product, ownerAccountId, video) {
+    const url = String(video.url || '').replace('https://api.telegram.org', config.telegram?.apiBase || 'https://api.telegram.org');
+    if (!url) return;
+    const res = await (config.video?.fetch || telegramFetch(config.telegram?.proxy))(url, { signal: AbortSignal.timeout(120_000) });
+    if (!res.ok) throw new Error(`Telegram answered ${res.status}`);
+    const job = await services.videos.save(ownerAccountId, Buffer.from(await res.arrayBuffer()));
+    const done = await services.videos.ready(ownerAccountId, job.id);
+    if (done.status !== 'ready') throw new Error(done.error || 'not converted');
+    await services.catalog.updateProduct(product.id, { videoUrl: done.url, telegramVideoId: video.fileId || '' });
+  }
+
+  async function ingestChannelPost({ chatId, text = '', photo = null, photos = null, fileIds = null, messageId = null, messageIds = null, replyToMessageId = null, video = null }) {
     // An album is one post with several photos; a lone photo is just a list of one.
     const gallery = photos?.length ? photos : photo ? [photo] : [];
     const record = await stores.findOne((doc) => doc.channels?.telegram?.chatId === String(chatId));
@@ -301,6 +316,9 @@ export function createChannelsService(ctx) {
       throw err;
     }
     await markSeen();
+    if (video?.url) {
+      attachVideo(product, record.ownerAccountId, video).catch((err) => log?.warn?.(`video of channel post ${messageId} not attached: ${err.message}`));
+    }
     await linkProduct(product.id, { chatId: String(chatId), messageId: messageId ? String(messageId) : null, messageIds: (messageIds || (messageId ? [messageId] : [])).map(String), origin: 'channel_sync' });
 
     // A channel-first shop starts in 'draft' with nothing to submit; its

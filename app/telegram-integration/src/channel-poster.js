@@ -89,9 +89,19 @@ export function createChannelPoster({ core, api, config, log }) {
       // to Telegram as a photo source ("failed to get HTTP URL content") —
       // the original file_id is what actually works, when the bot has one.
       const photo = post.product.telegramFileIds?.[0] || post.product.image;
-      const message = await sendWithPhotoFallback({ api, log }, post.chatId, photo, text, markup);
+      // a product with a video is announced with it (Telegram's own file id when it came from there, else our web copy);
+      // if the video cannot be sent, the photo post still goes out
+      const clip = post.product.telegramVideoId || post.product.videoUrl;
+      let message = null;
+      if (clip) {
+        try { message = await api.sendVideo(post.chatId, clip, text, { reply_markup: markup }); } catch (err) {
+          if (err.unreachable) throw err;
+          log.warn(`video failed for channel post to ${post.chatId} (${err.message}) — posting the photo instead`);
+        }
+      }
+      message ||= await sendWithPhotoFallback({ api, log }, post.chatId, photo, text, markup);
 
-      await core.markChannelPosted(post.id, { ok: true, messageId: String(message?.message_id || ''), hasPhoto: Boolean(message?.photo?.length) });
+      await core.markChannelPosted(post.id, { ok: true, messageId: String(message?.message_id || ''), hasPhoto: Boolean(message?.photo?.length || message?.video) });
       log.info(`posted ${post.product.title} to channel ${post.chatId}`);
     } catch (err) {
       // Removed as admin, channel deleted, or the bot was kicked: the core

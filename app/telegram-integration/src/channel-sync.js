@@ -13,6 +13,7 @@
  * read as its own (caption-less, product-less) post and the gallery lost.
  */
 const ALBUM_SETTLE_MS = 1500;
+const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // the Bot API's download limit
 
 export function createChannelSync({ core, api, log, albumSettleMs = ALBUM_SETTLE_MS }) {
   const albums = new Map();
@@ -22,10 +23,24 @@ export function createChannelSync({ core, api, log, albumSettleMs = ALBUM_SETTLE
     try {
       const text = posts.map((p) => p.text || p.caption || '').find(Boolean) || '';
       const fileIds = posts.filter((p) => p.photo?.length).map((p) => p.photo[p.photo.length - 1].file_id);
+      // The post's first video (Telegram lets a bot download up to 20 MB). With no photo at all, its still frame
+      // stands in, so the product still has a picture.
+      const clip = posts.map((p) => p.video).find(Boolean);
+      const still = clip?.thumbnail?.file_id || clip?.thumb?.file_id;
+      if (!fileIds.length && still) fileIds.push(still);
       // Largest rendition last, same convention as everywhere else a photo is read.
       const photos = (await Promise.all(fileIds.map((id) => api.fileUrl(id).catch(() => null)))).filter(Boolean);
 
+      let video = null;
+      if (clip && (clip.file_size || 0) <= MAX_VIDEO_BYTES) {
+        const url = await api.fileUrl(clip.file_id).catch(() => null);
+        if (url) video = { url, fileId: clip.file_id };
+      } else if (clip) {
+        log.info(`channel post ${first.message_id}: video over ${MAX_VIDEO_BYTES / 1048576} MB, a bot cannot download it`);
+      }
+
       const { product } = await core.ingestChannelPost({
+        video,
         chatId: String(first.chat.id),
         text,
         photo: photos[0] || null,

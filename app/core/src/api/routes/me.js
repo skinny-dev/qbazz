@@ -175,6 +175,10 @@ export function registerMeRoutes(root, core) {
 
   router.post('/uploads', async (ctx) => status(201, await services.uploads.saveImage(requireAuth(ctx).id, ctx.body.data)));
 
+  // A video arrives as the file itself (not JSON), is converted in the background, and is asked about until it is ready.
+  router.post('/uploads/video', async (ctx) => status(201, await services.videos.save(requireAuth(ctx).id, ctx.req)), { auth: 'required', raw: true });
+  router.get('/uploads/video/:id', async (ctx) => services.videos.get(requireAuth(ctx).id, ctx.params.id));
+
   // -- Price requests (products sold by asking) -------------------------------
 
   router.post('/price-requests', async (ctx) => status(201, await services.priceRequests.request(requireAuth(ctx).id, ctx.body.productId, {

@@ -69,7 +69,7 @@ export function createUploadsService(ctx) {
         changed++;
       }
     };
-    await apply(COLLECTIONS.products, ['images']);
+    await apply(COLLECTIONS.products, ['images', 'videoUrl', 'videoPoster']);
     await apply(COLLECTIONS.stores, ['logoUrl', 'bannerUrl']);
     await apply(COLLECTIONS.accounts, ['avatarUrl']);
     return changed;

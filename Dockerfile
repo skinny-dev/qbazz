@@ -3,7 +3,7 @@
 FROM node:24-bookworm-slim
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl ca-certificates tar \
+ && apt-get install -y --no-install-recommends curl ca-certificates tar ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 
 # sing-box: the small proxy client that carries Telegram through your VPN subscription. Optional - without it the

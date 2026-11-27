@@ -10,6 +10,8 @@ import { registerOnboardingRoutes } from './routes/onboarding.js';
 import { registerAdminRoutes } from './routes/admin.js';
 import { registerSyncRoutes } from './routes/sync.js';
 import { telegramFetch } from '../util/telegramFetch.js';
+import { createReadStream } from 'node:fs';
+import { stat } from 'node:fs/promises';
 import { registerChannelRoutes } from './routes/channels.js';
 
 /**
@@ -55,7 +57,10 @@ export function createHttpApi(core) {
     }
 
     if (req.method === 'GET' && url.pathname === '/media/tg') return proxyTelegramFile(res, url, config, log);
-    if (req.method === 'GET' && url.pathname.startsWith('/media/u/')) return serveUpload(res, url.pathname.slice('/media/u/'.length), core);
+    if (req.method === 'GET' && url.pathname.startsWith('/media/u/')) {
+      const name = url.pathname.slice('/media/u/'.length);
+      return name.endsWith('.mp4') ? serveVideo(req, res, name, core) : serveUpload(res, name, core);
+    }
 
     const matched = router.match(req.method, url.pathname);
     if (!matched) return send(res, 404, { error: { code: 'not_found', message: `No route for ${req.method} ${url.pathname}` } });
@@ -66,7 +71,8 @@ export function createHttpApi(core) {
     let locale = requestLocale(req, query, null, config);
 
     try {
-      const body = await readBody(req);
+      // a raw route (a video upload) reads the request itself, after the caller is known
+      const body = matched.route.options?.raw ? {} : await readBody(req);
       const auth = await authenticate(req, core, matched.route.options);
       locale = requestLocale(req, query, auth, config);
 
@@ -195,6 +201,24 @@ let publicApiBase = 'http://localhost:8080';
 
 export function scrubTelegramUrls(json) {
   return json.replace(TG_FILE_URL, (_m, path) => `${publicApiBase}/media/tg?p=${encodeURIComponent(path)}`);
+}
+
+/** A video is streamed from disk, in the byte ranges a player asks for (Safari will not play one otherwise). */
+async function serveVideo(req, res, name, core) {
+  const file = core.services.videos.pathOf(name);
+  const info = file ? await stat(file).catch(() => null) : null;
+  if (!info) return send(res, 404, { error: { code: 'not_found', message: 'No such media' } });
+  const head = { 'content-type': 'video/mp4', 'accept-ranges': 'bytes', 'cache-control': 'public, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' };
+  const m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+  if (m && (m[1] || m[2])) {
+    const start = m[1] ? Number(m[1]) : Math.max(0, info.size - Number(m[2]));
+    const end = m[1] && m[2] ? Math.min(Number(m[2]), info.size - 1) : info.size - 1;
+    if (start >= info.size || start > end) { res.writeHead(416, { 'content-range': `bytes */${info.size}` }); return res.end(); }
+    res.writeHead(206, { ...head, 'content-range': `bytes ${start}-${end}/${info.size}`, 'content-length': end - start + 1 });
+    return createReadStream(file, { start, end }).on('error', () => res.destroy()).pipe(res);
+  }
+  res.writeHead(200, { ...head, 'content-length': info.size });
+  return createReadStream(file).on('error', () => res.destroy()).pipe(res);
 }
 
 async function serveUpload(res, name, core) {

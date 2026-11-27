@@ -510,6 +510,7 @@ export function createDiscoveryService(ctx) {
       storeSlug: product.storeSlug,
       image: product.images?.[0] || null,
       imageCount: product.images?.length || 0,
+      hasVideo: Boolean(product.videoUrl),
       hasVariants: (product.variants?.length || 0) > 0,
       saleUnit: product.saleUnit?.kind === 'pack' ? { kind: 'pack', size: product.saleUnit.size, label: product.saleUnit.label } : null,
       categoryId: product.categoryId || null,
@@ -538,6 +539,9 @@ export function createDiscoveryService(ctx) {
       seo: product.seo ? { metaTitle: product.seo.metaTitle || null, metaDescription: product.seo.metaDescription || null, keywords: product.seo.keywords || [], imageAlt: product.seo.imageAlt || null } : null,
       updatedAt: product.updatedAt || null,
       images: product.images || [],
+      videoUrl: product.videoUrl || null,
+      videoPoster: product.videoPoster || null,
+      telegramVideoId: product.telegramVideoId || null,
       // Bot-internal, used only by the channel poster: Telegram's own file
       // download URL cannot reliably be handed back to Telegram, so it resends
       // the original file instead when it has one. Not meant for the web.

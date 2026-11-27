@@ -133,6 +133,7 @@ export function registerSyncRoutes(root, core) {
       text: ctx.body.text || '',
       photo: ctx.body.photo || null,
       photos: ctx.body.photos || null,
+      video: ctx.body.video || null,
       fileIds: ctx.body.fileIds || null,
       messageId: ctx.body.messageId || null,
       messageIds: ctx.body.messageIds || null,

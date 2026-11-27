@@ -278,6 +278,13 @@ export function createCatalogService(ctx) {
     if (data.stock === 0 && data.status === 'active') data.status = 'out_of_stock';
   }
 
+  /** What a chosen video means for the product: our own file and its still frame, or none. */
+  async function videoFields(url) {
+    if (!url) return { videoUrl: '', videoPoster: '' };
+    const video = await services.videos.resolveUrl(url);
+    return { videoUrl: video.url, videoPoster: video.poster || '' };
+  }
+
   async function createProduct(storeId, input, { actorAccountId, skipChannelSync = false } = {}) {
     if (actorAccountId) await services.stores.assertCan(storeId, actorAccountId, 'products.manage');
     const parent = await services.stores.resolve(storeId);
@@ -311,6 +318,7 @@ export function createCatalogService(ctx) {
     }
 
     const slug = await uniqueSlug(input.slug || data.title, async (c) => Boolean(await products.findOne({ storeId: parent.id, slug: c })));
+    if (data.videoUrl) Object.assign(data, await videoFields(data.videoUrl));
     const record = await products.insert({
       id: newId('prd'),
       storeId: parent.id,
@@ -361,6 +369,12 @@ export function createCatalogService(ctx) {
     }
     data.searchText = buildSearchText(next, await namesFor(await getCategory(next.categoryId)));
     if (data.status === 'active' && !current.publishedAt) data.publishedAt = new Date().toISOString();
+
+    // (an empty string means "take the video off" - read from the patch, where it still is)
+    if (patch.videoUrl !== undefined && (patch.videoUrl || '') !== (current.videoUrl || '')) {
+      Object.assign(data, await videoFields(patch.videoUrl));
+      if (patch.telegramVideoId === undefined) data.telegramVideoId = '';
+    }
 
     // `telegramFileIds` is indexed like `images`. When the album is edited, keep the file ids of the photos that stayed
     // (so Telegram can resend them cheaply); if any photo is new, fall back to plain links for the whole post.

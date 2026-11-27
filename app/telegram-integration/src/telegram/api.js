@@ -85,6 +85,10 @@ export class TelegramApi {
     return this.call('sendPhoto', { chat_id: chatId, photo, caption: truncate(caption, 1024), parse_mode: 'HTML', ...extra });
   }
 
+  sendVideo(chatId, video, caption, extra = {}) {
+    return this.call('sendVideo', { chat_id: chatId, video, caption: truncate(caption, 1024), parse_mode: 'HTML', supports_streaming: true, ...extra });
+  }
+
   /** 2–10 photos shown as one album; each item may carry its own caption. */
   sendMediaGroup(chatId, media) {
     return this.call('sendMediaGroup', { chat_id: chatId, media: media.map((item) => ({ ...item, parse_mode: 'HTML', caption: truncate(item.caption || '', 1024) })) });

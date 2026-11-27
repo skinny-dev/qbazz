@@ -39,6 +39,15 @@ export function loadConfig(env = process.env, overrides = {}) {
     },
 
     // Images uploaded from the website live beside the data file.
+    // product videos: converted to a light web copy by ffmpeg (installed in the Docker image)
+    video: {
+      ffmpeg: env.QBAZZ_FFMPEG || 'ffmpeg',
+      ffprobe: env.QBAZZ_FFPROBE || 'ffprobe',
+      maxBytes: num(env.QBAZZ_VIDEO_MAX_MB, 60) * 1_000_000,
+      maxSeconds: num(env.QBAZZ_VIDEO_MAX_SECONDS, 90),
+      maxPerAccount: num(env.QBAZZ_VIDEOS_PER_ACCOUNT, 300),
+    },
+
     uploads: { maxPerAccount: num(env.QBAZZ_UPLOADS_PER_ACCOUNT, 3000), dir: env.QBAZZ_UPLOAD_DIR || path.join(path.dirname(env.QBAZZ_STORAGE_FILE || path.join(pkgRoot, 'data', 'qbazz.json')), 'uploads') },
 
     auth: {
