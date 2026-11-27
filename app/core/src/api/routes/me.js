@@ -175,6 +175,20 @@ export function registerMeRoutes(root, core) {
 
   router.post('/uploads', async (ctx) => status(201, await services.uploads.saveImage(requireAuth(ctx).id, ctx.body.data)));
 
+  // The same, as the file's own bytes: a third less to send than base64, which matters on a slow phone connection.
+  router.post('/uploads/image', async (ctx) => {
+    const account = requireAuth(ctx);
+    const chunks = [];
+    let size = 0;
+    for await (const chunk of ctx.req) {
+      size += chunk.length;
+      if (size > 1_600_000) break; // saveImage says why
+      chunks.push(chunk);
+    }
+    const bytes = size > 1_600_000 ? Buffer.alloc(1_600_000) : Buffer.concat(chunks);
+    return status(201, await services.uploads.saveImage(account.id, bytes.toString('base64')));
+  }, { auth: 'required', raw: true });
+
   // A video arrives as the file itself (not JSON), is converted in the background, and is asked about until it is ready.
   router.post('/uploads/video', async (ctx) => status(201, await services.videos.save(requireAuth(ctx).id, ctx.req)), { auth: 'required', raw: true });
   router.get('/uploads/video/:id', async (ctx) => services.videos.get(requireAuth(ctx).id, ctx.params.id));
