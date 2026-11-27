@@ -6,7 +6,9 @@
  */
 
 // Telegram, and the AI providers that refuse requests from Iran (Google's Gemini, OpenAI, Anthropic)
-const TELEGRAM_DOMAINS = ['telegram.org', 't.me', 'telegram.me', 'telegra.ph', 'tg.dev', 'generativelanguage.googleapis.com', 'api.openai.com', 'api.anthropic.com'];
+const TELEGRAM_DOMAINS = ['telegram.org', 't.me', 'telegram.me', 'telegra.ph', 'tg.dev',
+  // where a channel's photos and videos are served from: without these the posts arrive without their pictures
+  'telesco.pe', 'cdn-telegram.org', 'telegram-cdn.org', 'generativelanguage.googleapis.com', 'api.openai.com', 'api.anthropic.com'];
 
 const b64 = (text) => Buffer.from(String(text).replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
 const looksBase64 = (text) => /^[A-Za-z0-9+/=_\-\s]+$/.test(text) && text.replace(/\s/g, '').length % 4 !== 1;
