@@ -22,7 +22,7 @@ export function createChannelImportService(ctx) {
   const { store: db, services, events, config, log } = ctx;
   const jobs = db.collection(COLLECTIONS.channelImports);
   // t.me is as unreachable from some servers as the Bot API is: it travels the Telegram proxy when one is set
-  const fetchImpl = config.channelImport?.fetch || telegramFetch(config.telegram?.proxy);
+  const fetchImpl = config.channelImport?.fetch || telegramFetch(config.telegram?.webProxy || config.telegram?.proxy);
   const delayMs = config.channelImport?.delayMs ?? 350;
 
   const IN_PROGRESS = ['reading', 'importing'];
@@ -69,7 +69,13 @@ export function createChannelImportService(ctx) {
     // Reading takes a while (a page every moment or so): the request returns now and the screen polls.
     run(job.id).catch(async (err) => {
       log?.warn?.(`channel import ${job.id} failed: ${err.message}`);
-      await jobs.update(job.id, { status: 'failed', error: err.code || 'failed', errorMessage: err.message });
+      // a network failure ("fetch failed") means nothing to a seller: say what is actually wrong
+      const unreachable = err.code === 'telegram_unavailable' || /fetch failed|ECONN|ETIMEDOUT|ENOTFOUND|aborted|timeout|proxy/i.test(`${err.message} ${err.cause?.message || ''}`);
+      await jobs.update(job.id, {
+        status: 'failed',
+        error: unreachable ? 'telegram_unreachable' : (err.code || 'failed'),
+        errorMessage: unreachable ? 'سرور الان به صفحهٔ کانال در تلگرام (t.me) دسترسی ندارد. اتصال پروکسی سرور باید بررسی شود.' : err.message,
+      });
     });
     return view(job, { items: false });
   }

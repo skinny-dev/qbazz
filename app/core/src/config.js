@@ -175,7 +175,9 @@ export function loadConfig(env = process.env, overrides = {}) {
 
     // Only used to proxy Telegram-hosted product photos to the public web, so the
     // bot token never appears in a URL a browser can read.
-    telegram: { botToken: env.TELEGRAM_BOT_TOKEN || '', apiBase: env.TELEGRAM_API_BASE || 'https://api.telegram.org', proxy: env.TELEGRAM_PROXY || '' },
+    telegram: { botToken: env.TELEGRAM_BOT_TOKEN || '', apiBase: env.TELEGRAM_API_BASE || 'https://api.telegram.org', proxy: env.TELEGRAM_PROXY || '',
+      // only for the public channel pages and their photos (t.me, telesco.pe), when the Bot API is reachable without one
+      webProxy: env.QBAZZ_TELEGRAM_WEB_PROXY || '' },
 
     sync: {
       // How many outbox events to retain for cursor-based catch-up.

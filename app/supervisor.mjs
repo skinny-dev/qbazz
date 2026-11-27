@@ -134,7 +134,11 @@ async function main() {
       await refresh();
       const proxy = keepAlive({ name: 'proxy', command: 'sing-box', args: ['run', '-c', configFile] }, { log });
       running.push(proxy);
-      shared.TELEGRAM_PROXY = 'http://127.0.0.1:10809';
+      // By default only the channel pages go through it: the Bot API is reachable directly here, and the bot should
+      // not stop because a VPN server did. QBAZZ_PROXY_ALL=true sends every Telegram call through it.
+      if (String(env.QBAZZ_PROXY_ALL || '').toLowerCase() === 'true') shared.TELEGRAM_PROXY = 'http://127.0.0.1:10809';
+      else shared.QBAZZ_TELEGRAM_WEB_PROXY = 'http://127.0.0.1:10809';
+      console.log('[supervisor] proxy started for Telegram channel reading');
       // a fresh server list every six hours: sing-box rereads its file on restart
       setInterval(() => refresh().then(() => { console.log('[proxy] server list refreshed'); }).catch((err) => console.log(`[proxy] refresh failed: ${err.message}`)), 6 * 3600 * 1000).unref();
     } catch (err) {
