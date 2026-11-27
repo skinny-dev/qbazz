@@ -1,3 +1,5 @@
+import { buildCategoryGuesser } from '../util/categoryGuess.js';
+import { flattenTaxonomy } from '../models/taxonomy.js';
 import { COLLECTIONS, ONBOARDING_FLOWS, PAYMENT_METHODS, FULFILLMENT_METHODS, SHIPPING_PAYER } from '../models/schemas.js';
 import { ConflictError, NotFoundError, ValidationError, localizeError } from '../errors.js';
 import { newId } from '../util/ids.js';
@@ -317,6 +319,8 @@ function presentStep(definition, step, data, locale) {
       // When options are dynamic (the category list), the client fetches them
       // from the matching public endpoint instead of receiving them inline.
       optionsSource: step.optionsSource || null,
+      // a richer picker some clients have for this question (the web's category tree); others ignore it
+      picker: step.picker || null,
       // Query for that endpoint when the choices depend on an earlier answer
       // (the sub-categories of the group the seller just picked).
       optionsQuery: step.optionsQuery ? step.optionsQuery(data) : null,
@@ -340,6 +344,9 @@ function presentStep(definition, step, data, locale) {
     },
   };
 }
+
+const MAX_CATEGORIES = 30;
+const splitIds = (value) => String(value || '').split(',').map((v) => v.trim()).filter(Boolean);
 
 // ---------------------------------------------------------------------------
 // Flow definitions
@@ -371,11 +378,19 @@ function buildFlows(config) {
           rule: { type: 'string', required: true },
           options: () => null, // filled by the client from GET /categories
           optionsSource: 'categories',
+          picker: 'category-tree',
+          // One category, or several as "id1,id2" (a shop that sells more than one kind of thing).
           check: async (value, _data, ctx) => {
-            const category = await ctx.services.catalog.getCategory(value);
-            return category ? true : 'err.pick_category';
+            const ids = splitIds(value);
+            if (!ids.length || ids.length > MAX_CATEGORIES) return 'err.pick_category';
+            for (const id of ids) if (!(await ctx.services.catalog.getCategory(id))) return 'err.pick_category';
+            return true;
           },
-          parse: async (value, _data, ctx) => (await ctx.services.catalog.getCategory(value)).id,
+          parse: async (value, _data, ctx) => {
+            const ids = [];
+            for (const id of splitIds(value)) ids.push((await ctx.services.catalog.getCategory(id)).id);
+            return [...new Set(ids)].join(',');
+          },
         },
         {
           // Skipped when the person signed in with a phone number (the web's only way in): that
@@ -457,14 +472,23 @@ function buildFlows(config) {
         const data = session.data;
 
         const categories = await services.catalog.listCategories();
-        const categoryName = categories.find((c) => c.id === data.categoryId)?.name || '';
+        const byId = new Map(categories.map((c) => [c.id, c]));
+        const chosen = splitIds(data.categoryId).map((id) => byId.get(id)).filter(Boolean);
+        // The shop is filed under what was chosen and under their groups, so it shows in both places.
+        const shopCategoryIds = [...new Set([...chosen.map((c) => c.parentId).filter(Boolean), ...chosen.map((c) => c.id)])];
+        // The first product goes where its own title says, among the chosen kinds; otherwise the first of them.
+        const kinds = chosen.filter((c) => c.parentId);
+        const faName = new Map(flattenTaxonomy().map((r) => [r.slug, r.fa]));
+        const named = buildCategoryGuesser(kinds.map((c) => ({ slug: c.slug, nameFa: faName.get(c.slug) || c.name })))({ title: data.firstProductTitle });
+        const productCategory = kinds.find((c) => c.slug === named) || kinds[0] || chosen[0] || null;
+        const categoryName = chosen.slice(0, 3).map((c) => faName.get(c.slug) || c.name).join('، ');
 
         const record = await services.stores.create(session.accountId, {
           name: data.storeName,
           // A line to start with; the seller rewrites it in Settings when they want to.
           description: data.description || (categoryName ? `${data.storeName} — ${categoryName}` : data.storeName),
           currency: data.currency || cfg.platform.defaultCurrency,
-          categoryIds: data.categoryId ? [data.categoryId] : [],
+          categoryIds: shopCategoryIds,
           location: {
             // The confirmed name wins over the geocoder's first guess.
             city: data.locationCity || data.location?.city,
@@ -513,7 +537,7 @@ function buildFlows(config) {
         const product = await services.catalog.createProduct(record.id, {
           title,
           price: data.firstProductPrice,
-          categoryId: data.categoryId,
+          categoryId: productCategory?.id,
           images: photoList(data.firstProductPhoto),
           status: 'active',
           description,
